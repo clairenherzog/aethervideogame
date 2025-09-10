@@ -949,7 +949,10 @@ function mouseReleased() {
   }
 }
 
-function centerButtonOnCanvas(btn, yOffset) {
+function centerButtonOnCanvas(btn, yOffset = 0) {
+  // Check if btn and canvas are defined, and have the 'elt' property
+  if (!btn || !btn.elt || !canvas || !canvas.elt) return;
+
   const canvasX = canvas.elt.getBoundingClientRect().left + window.scrollX;
   const canvasY = canvas.elt.getBoundingClientRect().top + window.scrollY;
   btn.position(
