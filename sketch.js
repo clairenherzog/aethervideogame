@@ -177,7 +177,7 @@ function preload() {
     () => console.log("Carnival sound loaded successfully"),
     () => console.log("Error loading carnival sound")
   );
-  ringtossSound = loadSound("assets/ringtoss.mp3",
+  ringtossSound = loadSound("assets/ringtossmemory.mp3",
     () => console.log("Ring toss sound loaded successfully"),
     () => console.log("Error loading ring toss sound")
   );
