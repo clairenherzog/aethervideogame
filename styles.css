@@ -1,0 +1,56 @@
+
+@font-face {
+  font-family: 'MakibaFont';
+  src: url('assets/makibafont13.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+}
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap');
+
+html, body { 
+  margin: 0; 
+}
+
+body {
+  font-family: 'Orbitron', Arial, sans-serif;
+  color: #333;
+  text-align: center;
+  padding: 20px;
+  background-color: transparent; 
+}
+
+#sketch {
+  margin: 20px auto;
+  border: 15px;
+  padding: 10px;
+  width: fit-content;
+  background: transparent
+}
+
+/* Style all buttons */
+button {
+  font-family: 'Makiba', monospace;
+  font-weight: 700;
+  font-size: 14px;
+}
+
+.controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255,255,255,0.75);
+  padding: 8px 12px;
+  border-radius: 8px;
+  backdrop-filter: blur(4px);
+  margin: 8px auto 20px;
+}
+
+@media (max-width: 700px) {
+  .controls {
+    flex-direction: column;   
+    align-items: stretch;    
+    gap: 8px;                
+  }
+}

@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>p5.js & Assets Demo</title>
+    <link rel="stylesheet" href="styles.css" />
+
+    <!-- p5.js core + p5.sound for audio -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.0/p5.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.0/addons/p5.sound.min.js"></script>
+
+    <script src="sketch.js" defer></script>
+
+    <style>
+      /* Bunny container styles */
+      #bunny-container {
+        position: relative;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        margin-top: 20px;
+      }
+      .bunny {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 300px; /* same size for both */
+        height: auto;
+        cursor: pointer;
+      }
+      #stuffedbunny {
+        display: none; /* hidden until glowing one disappears */
+      }
+    </style>
+  </head>
+
+  <body>
+    <h1>My p5.js Sketch</h1>
+    <div id="sketch"></div>
+
+    <!-- Bunny images -->
+    <div id="bunny-container">
+      <img id="stuffedbunnywon" class="bunny" src="stuffedbunnywon.png" alt="Glowing Bunny">
+      <img id="stuffedbunny" class="bunny" src="stuffedbunny.png" alt="Stuffed Bunny">
+    </div>
+
+    <!-- ADD: controls (button + volume slider) -->
+    <div class="controls">
+      <button id="toggle-sound">Play / Stop Music</button>
+      <label>Volume:
+        <input id="vol" type="range" min="0" max="1" step="0.01" value="0.5" />
+        <span id="volVal">0.50</span>
+      </label>
+    </div>
+
+    <script>
+      // Function to swap glowing bunny → stuffed bunny
+      function revealClickableBunny() {
+        const bunnyWon = document.getElementById("stuffedbunnywon");
+        const bunny = document.getElementById("stuffedbunny");
+
+        bunnyWon.style.display = "none";
+        bunny.style.display = "block";
+      }
+
+      // Example: call this after your text finishes loading
+      // revealClickableBunny();
+    </script>
+  </body>
+</html>
+
