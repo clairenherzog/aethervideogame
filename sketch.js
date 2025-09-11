@@ -673,6 +673,10 @@ function draw() {
       // Draw the bunny overlay if it's time
       if (showBunnyOverlay && stuffedbunnyWon) {
         push();
+        fill(0);
+        noStroke();
+        rectMode(CORNER);
+        rect(0, 0, width, height);
         imageMode(CENTER);
         image(stuffedbunnyWon, width/2, height/2, 80, 80);
         pop(); 
@@ -718,6 +722,23 @@ function draw() {
       }
     }
   }
+// If the bunny is available and not yet in inventory, draw it with FULL black background
+  if (scene === "scene2.0" && bunnyAvailable && !bunnyInInventory) {
+  push();
+  // Draw black background over canvas
+  fill(0);
+  noStroke();
+  rectMode(CORNER);
+  rect(0, 0, width, height);
+  imageMode(CENTER);
+  if (stuffedBunny) {
+    image(stuffedBunny, bunnyX, bunnyY, 60, 60);
+  } else if (stuffedbunnyWon) {
+    image(stuffedbunnyWon, bunnyX, bunnyY, 60, 60);
+  }
+  imageMode(CORNER);
+  pop();
+}
 
   // Draw UI icons (settings, map, inventory) - but not on start screen
   if (scene !== "start") {
