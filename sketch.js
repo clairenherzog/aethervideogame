@@ -143,6 +143,7 @@ let transitioningToRingToss = false; // prevents immediate attachment
 
 // --- Inventory & Bunny drag state (NEW) ---
 let invX, invY, invSize; // inventory box at top (not overlapping icons)
+let bunnyX, bunnyY, bunnyDragging = false, bunnyOffsetX = 0, bunnyOffsetY = 0;
 let bunnyAvailable = false; // becomes true after messages shown
 let bunnyInInventory = false;
 let inventoryItems = []; // list of strings / items placed in inventory
