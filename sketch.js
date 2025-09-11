@@ -679,7 +679,7 @@ function draw() {
         // elapsed since the overlay became visible
         let elapsed = millis() - (bunnyOverlayStartTime + 3000);
         let msg1 = "you won the pink stuffed bunny!";
-        let msg2 = "put it in your inventory up top!";
+        let msg2 = "click on it to put it in your inventory up top!";
 
         // show first message immediately after overlay; second after 1500ms
         push();
