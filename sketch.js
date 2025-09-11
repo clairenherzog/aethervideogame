@@ -1174,4 +1174,4 @@ function drawMemorySequence() {
     noStroke();
     rect(0, 0, width, height);
   }
-
+}
