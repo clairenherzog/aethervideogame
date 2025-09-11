@@ -9,10 +9,10 @@ let img5; // map for game
 let img6;   // funhouse scene 
 let img7;   // sewer scene 
 let funhouseKey;
-let keyX = 300; // adjust as you want
-let keyY = 250;
-let keyW = 60;
-let keyH = 60;
+let keyX = 80; 
+let keyY = 300;
+let keyW = 200;
+let keyH = 200;
 let playImg; // play button
 let continueImg; // continue button
 let proceedImg; // proceed to mission button
@@ -631,9 +631,20 @@ function draw() {
     image(img6, 0, 0, width, height);
     if (!inventoryItems.includes("funhouse key")) {
     imageMode(CENTER);
-    image(funhouseKey, keyX, keyY, keyW, keyH); // set keyW/keyH to your size
+    push();
+      translate(keyX, keyY);
+      rotate(radians(30));
+      image(funhouseKey, 0, 0, keyW, keyH); // set keyW/keyH to your size
+    pop();
     imageMode(CORNER);
     }
+   fill(255, 255, 0);
+   stroke(0);
+   strokeWeight(3);
+   textSize(20);
+   textAlign(LEFT, TOP);
+   text("Mouse: (" + mouseX + ", " + mouseY + ")", 10, 10);
+ }
   } else if (scene == "sewers") {
     image(img7, 0, 0, width, height);
     if (sewerSound && !sewerSound.isPlaying()) {
