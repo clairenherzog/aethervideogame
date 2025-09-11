@@ -347,7 +347,7 @@ function setup() {
   memoryExitButton.style("border", "2px solid white");
   memoryExitButton.style("border-radius", "5px");
   memoryExitButton.size(140, 30);
-  centerButtonOnCanvas(memoryExitButton, 40);
+  centerButtonOnCanvas(memoryExitButton, 60);
   memoryExitButton.hide(); 
   memoryExitButton.mousePressed(() => {
   playActionClick(); // Play click sound
