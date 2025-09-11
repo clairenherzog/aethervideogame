@@ -9,8 +9,8 @@ let img5; // map for game
 let img6;   // funhouse scene 
 let img7;   // sewer scene 
 let funhouseKey;
-let keyX = 80; 
-let keyY = 300;
+let keyX = 315; 
+let keyY = 440;
 let keyW = 200;
 let keyH = 200;
 let playImg; // play button
