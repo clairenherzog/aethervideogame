@@ -198,6 +198,56 @@ function preload() {
   );
 }
 
+// Function to stop all music
+function stopAllMusic() {
+  if (homepageSound && homepageSound.isPlaying()) homepageSound.stop();
+  if (carnivalSound && carnivalSound.isPlaying()) carnivalSound.stop();
+  if (funhouseSound && funhouseSound.isPlaying()) funhouseSound.stop();
+  if (ringtossMemory && ringtossMemory.isPlaying()) ringtossMemory.stop();
+  currentMusic = null;
+}
+
+// Function to play specific music for a scene
+function playSceneMusic(sceneName) {
+  // Don't restart the same music
+  if (currentMusic === sceneName) return;
+  
+  stopAllMusic();
+  
+  switch(sceneName) {
+    case "start":
+    case "prologue":
+      if (homepageSound && homepageSound.isLoaded()) {
+        homepageSound.loop();
+        currentMusic = sceneName;
+      }
+      break;
+    case "scene1.1":
+      if (carnivalSound && carnivalSound.isLoaded()) {
+        carnivalSound.loop();
+        currentMusic = sceneName;
+      }
+      break;
+    case "memory":
+      if (ringtossMemory && ringtossMemory.isLoaded()) {
+        ringtossMemory.play();
+        currentMusic = sceneName;
+      }
+      break;
+    case "funhouse":
+      if (funhouseSound && funhouseSound.isLoaded()) {
+        funhouseSound.loop();
+        currentMusic = sceneName;
+      }
+      break;
+    case "map":
+    case "sewers":
+      // These scenes have no music, just stop current music
+      stopAllMusic();
+      break;
+  }
+}
+
 function setup() {
   let w, h;
   if (isMobile()) {
@@ -377,7 +427,7 @@ function setupHTMLControls() {
     const initialVol = parseFloat(vol.value);
     if (homepageSound) homepageSound.setVolume(initialVol);
     if (carnivalSound) carnivalSound.setVolume(initialVol);
-    if (ringtossMound) ringtossMound.setVolume(initialVol);
+    if (ringtossMemory) ringtossMemory.setVolume(initialVol);
     if (funhouseSound) funhouseSound.setVolume(initialVol);
     if (actionclickSound) actionclickSound.setVolume(initialVol * 0.7);
     volVal.textContent = initialVol.toFixed(2);
