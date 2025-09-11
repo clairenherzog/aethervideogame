@@ -71,6 +71,7 @@ let homepageSound;
 let carnivalSound;
 let actionclickSound;
 let funhouseSound;
+let sewerSound;
 let canvas;
 let showBloodyScene = false; // Track whether to show bloody image
 let currentMusic = null;
@@ -197,6 +198,10 @@ function preload() {
     () => console.log("Funhouse sound loaded successfully"),
     () => console.log("Error loading funhouse sound")
   );
+  sewerSound = loadSound("assets/memory2.mp3",
+    () => console.log("Sewer sound loaded successfully"),
+    () => console.log("Sewer sound loaded successfully"),
+  );
 }
 
 // Function to stop all music
@@ -205,6 +210,7 @@ function stopAllMusic() {
   if (carnivalSound && carnivalSound.isPlaying()) carnivalSound.stop();
   if (funhouseSound && funhouseSound.isPlaying()) funhouseSound.stop();
   if (ringtossMemory && ringtossMemory.isPlaying()) ringtossMemory.stop();
+  if (sewerSound && sewerSound.isPlaying() sewerSound.stop();
   currentMusic = null;
 }
 
@@ -242,9 +248,12 @@ function playSceneMusic(sceneName) {
       }
       break;
     case "map":
-    case "sewers":
-      // These scenes have no music, just stop current music
       stopAllMusic();
+    case "sewers":
+      if (sewerSound && sewerSound.isLoaded()) {
+        sewerSound.loop();
+        currentMusic = sceneName;
+      }
       break;
   }
 }
@@ -471,6 +480,7 @@ function setupHTMLControls() {
             if (homepageSound && homepageSound.isPlaying()) homepageSound.stop();
             if (carnivalSound && carnivalSound.isPlaying()) carnivalSound.stop();
             if (funhouseSound && funhouseSound.isPlaying()) funhouseSound.stop();
+            if (sewerSound && sewerSound.isPlaying()) sewerSound.stop();
             ringtossMemory.loop();
           } else ringtossMemory.stop();
         } else {
@@ -483,6 +493,7 @@ function setupHTMLControls() {
           if (!funhouseSound.isPlaying()) {
             if (homepageSound && homepageSound.isPlaying()) homepageSound.stop();
             if (carnivalSound && carnivalSound.isPlaying()) carnivalSound.stop();
+            if (sewerSound && sewerSound.isPlaying()) sewerSound.stop();
             if (ringtossMemory && ringtossMemory.isPlaying()) ringtossMemory.stop();
             funhouseSound.loop();
           } else funhouseSound.stop();
@@ -496,6 +507,7 @@ function setupHTMLControls() {
           if (!homepageSound.isPlaying()) {
             if (carnivalSound && carnivalSound.isPlaying()) carnivalSound.stop();
             if (ringtossMemory && ringtossMemory.isPlaying()) ringtossMemory.stop();
+            if (sewerSound && sewerSound.isPlaying()) sewerSound.stop();
             if (funhouseSound && funhouseSound.isPlaying()) funhouseSound.stop();
             homepageSound.loop();
           } else homepageSound.stop();
