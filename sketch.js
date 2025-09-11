@@ -262,9 +262,9 @@ function playSceneMusic(sceneName) {
     case "map":
       break;
     case "sewers":
-     // if (sewerSound && sewerSound.isLoaded()) {
-     // sewerSound.loop();
-     // currentMusic = sceneName;
+      if (sewerSound && sewerSound.isLoaded()) {
+        sewerSound.loop();
+        currentMusic = sceneName;
       }
       break;
   }
