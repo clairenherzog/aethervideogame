@@ -672,10 +672,7 @@ function draw() {
       
       // Draw the bunny overlay if it's time
       if (showBunnyOverlay && stuffedbunnyWon) {
-        push();
-        imageMode(CENTER);
-        image(stuffedbunnyWon, width/2, height/2, 80, 80);
-        pop(); 
+        image(stuffedbunnyWon, 0, 0, width, height);
       }
 
       // --- NEW: handle the sequential messages and make bunny clickable after ---
@@ -745,14 +742,14 @@ function draw() {
     pop();
   }
 
- // If the bunny is available and not yet in inventory, draw it 
+ // If the bunny is available and not yet in inventory, draw it bigger
 if (bunnyAvailable && !bunnyInInventory) {
   push();
   imageMode(CENTER);
   if (stuffedBunny) {
-    image(stuffedBunny, bunnyX, bunnyY, 60, 60); 
+    image(stuffedBunny, bunnyX, bunnyY -75, 470, 470); // ⬅ bigger size here
   } else if (stuffedbunnyWon) {
-    image(stuffedbunnyWon, bunnyX, bunnyY, 60, 60);
+    image(stuffedbunnyWon, bunnyX - 80, bunnyY - 80, 160, 160);
   }
   imageMode(CORNER);
   pop();
