@@ -1049,6 +1049,9 @@ function mousePressed() {
     if (d < keyW / 2) { // assuming the key is roughly square/circular
     inventoryItems.push("funhouse key");
     playActionClick(); // optional: play your click sound
+    if (funhouseMemory && funhouseMemory.isLoaded()) {
+      funhouseMemory.play();
+    }
     return; // prevent further click handling
   }
 }
