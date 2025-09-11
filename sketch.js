@@ -351,7 +351,8 @@ function setup() {
   memoryExitButton.hide(); 
   memoryExitButton.mousePressed(() => {
   playActionClick(); // Play click sound
-  goToMap();
+  transitioningToMap = true;
+  scene= "map";
   memoryExitButton.hide();
   showMemorySequence = false;
   memoryMusicStarted = false;
@@ -360,6 +361,9 @@ function setup() {
     ringtossMemory.stop();
   }
   playSceneMusic("map");
+  setTimeout(() => { 
+    transitioningToMap = false;
+  }, 300);
 });
   // NEW: inventory exit button (for inventory window)
   inventoryExitButton = createButton("exit");
