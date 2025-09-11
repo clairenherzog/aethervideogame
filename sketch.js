@@ -18,6 +18,7 @@ let playButton;
 let homepageFont;
 let buttonFont;
 let stuffedbunnyWon;
+let memories;
 let stuffedBunny; // transparent bunny used for dragging (user said this variable exists)
 let showBunnyOverlay = false;
 let bunnyOverlayStartTime = 0;
@@ -164,6 +165,7 @@ function preload() {
   img5 = loadImage("assets/map.png");
   img6 = loadImage("assets/funhouse.png");
   img7 = loadImage("assets/sewers.png");
+  memories = loadImage("assets/memorygirl.png");
   stuffedbunnyWon = loadImage("assets/stuffedbunnywon.png");
   // Transparent bunny sprite used for dragging (user said stuffedBunny already exists; re-load to be safe)
   stuffedBunny = loadImage("assets/stuffedbunny.png");
