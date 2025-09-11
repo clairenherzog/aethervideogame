@@ -522,13 +522,13 @@ function setupHTMLControls() {
             if (carnivalSound && carnivalSound.isPlaying()) carnivalSound.stop();
             if (funhouseSound && funhouseSound.isPlaying()) funhouseSound.stop();
             if (ringtossMemory && ringtossMemory.isPlaying()) ringtossMemory.stop();
-            sewerSound.loop();
+            sewerSound.play();
           } else {
-            sewerSound.stop();
+            sewerSound.play();
           }
         } else {
           setTimeout(() => {
-            if (sewerSound && sewerSound.isLoaded()) sewerSound.loop();
+            if (sewerSound && sewerSound.isLoaded()) sewerSound.play();
           }, 100);
         }
       } else if (scene === "start" || scene === "prologue") {
@@ -630,9 +630,9 @@ function draw() {
       exitSewerButton.position(
         canvasX + width / 2 - exitSewerButton.width / 2,
         canvasY + height - 60
-    );
+     );
      exitSewerButton.show();
-  } else {
+   } else {
      exitSewerButton.hide();
   }
 }
