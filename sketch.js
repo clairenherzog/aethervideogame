@@ -763,7 +763,7 @@ function draw() {
     if (inventory) {
       // draw inventory image centered in that rect
       imageMode(CENTER);
-      image(inventory, invX, invY, invSize, invSize);
+      image(inventory, invX + invSize / 2, invY + invSize / 2, invSize, invSize);
       imageMode(CORNER);
     }
     pop();
