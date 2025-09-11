@@ -769,6 +769,31 @@ function draw() {
       imageMode(CORNER);
     }
     pop();
+
+    let mapBoxX = width - 80;
+    let mapBoxY = 10;
+    let mapBoxSize = 30;
+    let mapIconPadding = 0.8;
+    let mapIconSize = mapBoxSize * mapIconPadding;
+
+    push();
+    rectMode(CORNER);
+    stroke(255);
+    strokeWeight(1);
+    noFill();
+    rect(mapBoxX, mapBoxY, mapBoxSize, mapBoxSize, 6);
+    pop();
+
+    if (mapIcon) {
+      imageMode(CENTER);
+      image(
+        mapIcon,
+        mapBoxX + mapBoxSize / 2,
+        mapBoxY + mapBoxSize / 2,
+        mapIconSize,
+       mapIconSize
+     );
+    imageMode(CORNER);
   }
 
  // If the bunny is available and not yet in inventory, draw it bigger
