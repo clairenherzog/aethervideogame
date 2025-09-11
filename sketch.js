@@ -981,6 +981,7 @@ function mousePressed() {
           mouseY >= area.minY && mouseY <= area.maxY) {
         playActionClick();
         scene = area.scene;
+        playSceneMusic(area.scene);
         fireflies = [];
         if (area.scene === "scene1.1") {
           typingActive11 = false;
