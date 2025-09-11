@@ -656,10 +656,12 @@ else if (scene === "scene2.0") {
   if (bunnyAvailable && !bunnyInInventory) {
     push();
     imageMode(CENTER);
+    bunnyX = width/2;
+    bunnyY = height/2;
     if (stuffedBunny) {
-      image(stuffedBunny, bunnyX, bunnyY, 60, 60);
+      image(stuffedBunny, bunnyX, bunnyY, 160, 160);
     } else if (stuffedbunnyWon) {
-      image(stuffedbunnyWon, bunnyX, bunnyY, 60, 60);
+      image(stuffedbunnyWon, bunnyX, bunnyY, 160, 160);
     }
     imageMode(CORNER);
     pop();
@@ -680,7 +682,7 @@ else if (scene === "scene2.0") {
     if (showBunnyOverlay && stuffedbunnyWon) {
       push();
       imageMode(CENTER);
-      image(stuffedbunnyWon, width / 2, height / 2, 80, 80);
+      image(stuffedbunnyWon, width / 2, height / 2, 160, 160);
       pop();
     }
 
