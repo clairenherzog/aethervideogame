@@ -314,8 +314,8 @@ function setup() {
   exitButton.style("border", "2px solid white");
   exitButton.style("border-radius", "5px");
   // *** END CHANGE 2 ***
-  exitButton.size(140, 30);
-  centerButtonOnCanvas(exitButton, 40);
+  exitButton.size(190, 30);
+  centerButtonOnCanvas(exitButton, 70);
   exitButton.hide(); 
   exitButton.mousePressed(() => {
     playActionClick(); // Play click sound
