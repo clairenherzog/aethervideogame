@@ -210,7 +210,7 @@ function stopAllMusic() {
   if (carnivalSound && carnivalSound.isPlaying()) carnivalSound.stop();
   if (funhouseSound && funhouseSound.isPlaying()) funhouseSound.stop();
   if (ringtossMemory && ringtossMemory.isPlaying()) ringtossMemory.stop();
-  if (sewerSound && sewerSound.isPlaying() sewerSound.stop();
+  if (sewerSound && sewerSound.isPlaying()) sewerSound.stop();
   currentMusic = null;
 }
 
@@ -248,7 +248,7 @@ function playSceneMusic(sceneName) {
       }
       break;
     case "map":
-      stopAllMusic();
+      break;
     case "sewers":
       if (sewerSound && sewerSound.isLoaded()) {
         sewerSound.loop();
