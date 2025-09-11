@@ -795,6 +795,7 @@ function draw() {
      );
     imageMode(CORNER);
   }
+}
 
  // If the bunny is available and not yet in inventory, draw it bigger
 if (bunnyAvailable && !bunnyInInventory) {
