@@ -637,107 +637,104 @@ function draw() {
 
 
 
-  } else if (scene === "scene2.0") {
-    // ring toss scene
+else if (scene === "scene2.0") {
+  // If the bunny overlay or the draggable bunny is active, draw a black background instead of the ringtoss scene
+  if ((ringWon && showBunnyOverlay && stuffedbunnyWon) || (bunnyAvailable && !bunnyInInventory)) {
+    // Black out the whole canvas
+    push();
+    fill(0);
+    noStroke();
+    rectMode(CORNER);
+    rect(0, 0, width, height);
+    pop();
+  } else {
+    // Otherwise, draw the ring toss scene
     image(img2, 0, 0, width, height);
+  }
 
-    if (!ringWon) {
+  // Draw the draggable bunny (on black background) if available
+  if (bunnyAvailable && !bunnyInInventory) {
+    push();
+    imageMode(CENTER);
+    if (stuffedBunny) {
+      image(stuffedBunny, bunnyX, bunnyY, 60, 60);
+    } else if (stuffedbunnyWon) {
+      image(stuffedbunnyWon, bunnyX, bunnyY, 60, 60);
+    }
+    imageMode(CORNER);
+    pop();
+  }
+
+  // Draw the bunny overlay (on black background) if it's time
+  if (ringWon) {
+    fill(255);
+    textAlign(CENTER, CENTER);
+    textSize(24);
+    text("You won!", width / 2, height / 2);
+
+    // Check if enough time has passed to show the bunny (3 seconds after win)
+    if (millis() - bunnyOverlayStartTime > 3000) {
+      showBunnyOverlay = true;
+    }
+
+    if (showBunnyOverlay && stuffedbunnyWon) {
       push();
       imageMode(CENTER);
-      if (ringAttached && attachedHook) {
-        image(img3, attachedHook.x, attachedHook.y, 100, 100);
-        if (!ringWon) {
-          setTimeout(() => {
-            ringWon = true;
-            bunnyOverlayStartTime = millis();
-          }, 500);
-        }
-      } else {
-        image(img3, mouseX, mouseY, 100, 100);
-      }
+      image(stuffedbunnyWon, width / 2, height / 2, 80, 80);
       pop();
     }
-    
-    // Display win message and handle bunny overlay timing
-    if (ringWon) {
-      fill(255);
+
+    // --- messages and bunny activation logic (unchanged) ---
+    if (showBunnyOverlay) {
+      let elapsed = millis() - (bunnyOverlayStartTime + 3000);
+      let msg1 = "you won the pink stuffed bunny!";
+      let msg2 = "put it in your inventory up top!";
+
+      push();
       textAlign(CENTER, CENTER);
-      textSize(24);
-      text("You won!", width / 2, height / 2);
-      
-      // Check if enough time has passed to show the bunny (3 seconds after win)
-      if (millis() - bunnyOverlayStartTime > 3000) {
-        showBunnyOverlay = true;
+      textSize(18);
+      fill(255);
+      stroke(0);
+      strokeWeight(2);
+      rectMode(CENTER);
+      fill(0, 140);
+      noStroke();
+      rect(width / 2, height * 0.15, width * 0.9, 60, 8);
+      fill(255);
+      noStroke();
+      textFont("Source Code Pro");
+      if (elapsed >= 0) {
+        text(msg1, width / 2, height * 0.15);
       }
-      
-      // Draw the bunny overlay if it's time
-      if (showBunnyOverlay && stuffedbunnyWon) {
-        push();
-        fill(0);
-        noStroke();
-        rectMode(CORNER);
-        rect(0, 0, width, height);
-        imageMode(CENTER);
-        image(stuffedbunnyWon, width/2, height/2, 80, 80);
-        pop(); 
+      if (elapsed > 1500) {
+        textSize(16);
+        text(msg2, width / 2, height * 0.21);
       }
+      pop();
 
-      // --- NEW: handle the sequential messages and make bunny clickable after ---
-      if (showBunnyOverlay) {
-        // elapsed since the overlay became visible
-        let elapsed = millis() - (bunnyOverlayStartTime + 3000);
-        let msg1 = "you won the pink stuffed bunny!";
-        let msg2 = "put it in your inventory up top!";
-
-        // show first message immediately after overlay; second after 1500ms
-        push();
-        textAlign(CENTER, CENTER);
-        textSize(18);
-        fill(255);
-        stroke(0);
-        strokeWeight(2);
-        // message box backdrop for readability
-        rectMode(CENTER);
-        fill(0, 140);
-        noStroke();
-        rect(width / 2, height * 0.15, width * 0.9, 60, 8);
-        fill(255);
-        noStroke();
-        textFont("Source Code Pro");
-        
-        if (elapsed >= 0) {
-          text(msg1, width / 2, height * 0.15);
-        }
-        if (elapsed > 1500) {
-          // draw second message below the first
-          textSize(16);
-          text(msg2, width / 2, height * 0.21);
-        }
-        pop();
-
-        // After the second message has displayed for a short time, enable the draggable bunny
-        if (elapsed > 2000 && !bunnyInInventory) {
-          bunnyAvailable = true;
-        }
+      if (elapsed > 2000 && !bunnyInInventory) {
+        bunnyAvailable = true;
       }
     }
   }
-// If the bunny is available and not yet in inventory, draw it with FULL black background
-  if (scene === "scene2.0" && bunnyAvailable && !bunnyInInventory) {
-  push();
-  // Draw black background over canvas
-  fill(0);
-  noStroke();
-  rectMode(CORNER);
-  rect(0, 0, width, height);
-  imageMode(CENTER);
-  if (stuffedBunny) {
-    image(stuffedBunny, bunnyX, bunnyY, 60, 60);
-  } else if (stuffedbunnyWon) {
-    image(stuffedbunnyWon, bunnyX, bunnyY, 60, 60);
+
+  // If still playing the game, draw the ring
+  if (!ringWon) {
+    push();
+    imageMode(CENTER);
+    if (ringAttached && attachedHook) {
+      image(img3, attachedHook.x, attachedHook.y, 100, 100);
+      if (!ringWon) {
+        setTimeout(() => {
+          ringWon = true;
+          bunnyOverlayStartTime = millis();
+        }, 500);
+      }
+    } else {
+      image(img3, mouseX, mouseY, 100, 100);
+    }
+    pop();
   }
-  imageMode(CORNER);
-  pop();
 }
 
   // Draw UI icons (settings, map, inventory) - but not on start screen
