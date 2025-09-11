@@ -631,7 +631,11 @@ function draw() {
     image(img6, 0, 0, width, height);
     if (!inventoryItems.includes("funhouse key")) {
     imageMode(CENTER);
-    image(funhouseKey, keyX, keyY, keyW, keyH); // set keyW/keyH to your size
+    push();
+      translate(keyX, keyY);
+      rotate(radians(30));
+      image(funhouseKey, keyX, keyY, keyW, keyH); // set keyW/keyH to your size
+    pop();
     imageMode(CORNER);
     }
   } else if (scene == "sewers") {
