@@ -758,12 +758,14 @@ function draw() {
     stroke(255);
     fill(0, 120);
     strokeWeight(1);
-    // invX, invY and invSize set in setup and windowResized
     rect(invX, invY, invSize, invSize, 6);
     if (inventory) {
+      let iconPadding = 0.8;
+      let iconSize = invSize * iconPadding;
+      let yOffset = 2;
       // draw inventory image centered in that rect
       imageMode(CENTER);
-      image(inventory, invX + invSize / 2, invY + invSize / 2, invSize, invSize);
+      image(inventory, invX + invSize / 2, invY + invSize / 2, iconSize, iconSize);
       imageMode(CORNER);
     }
     pop();
