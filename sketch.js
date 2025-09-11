@@ -1056,6 +1056,15 @@ function mouseReleased() {
   }
 }
 
+function goToMap() {
+  scene = "map";
+  playSceneMusic("map");
+  mapClickable = false; // disable clicks temporarily
+  setTimeout(() => {
+    mapClickable = true; // re-enable clicks after 200ms
+  }, 200);
+}
+
 function centerButtonOnCanvas(btn, yOffset = 0) {
   // Check if btn and canvas are defined, and have the 'elt' property
   if (!btn || !btn.elt || !canvas || !canvas.elt) return;
