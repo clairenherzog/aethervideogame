@@ -659,7 +659,7 @@ else if (scene === "scene2.0") {
     bunnyX = width/2;
     bunnyY = height/2;
     if (stuffedBunny) {
-      image(stuffedBunny, bunnyX, bunnyY, 160, 160);
+      image(stuffedBunny, bunnyX, bunnyY - 40, 160, 160);
     } else if (stuffedbunnyWon) {
       image(stuffedbunnyWon, bunnyX, bunnyY, 160, 160);
     }
