@@ -24,6 +24,7 @@ let exitSewerButton;
 let homepageFont;
 let buttonFont;
 let stuffedbunnyWon;
+let gasMask;
 let memories;
 let stuffedBunny; // transparent bunny used for dragging (user said this variable exists)
 let showBunnyOverlay = false;
@@ -171,6 +172,7 @@ function preload() {
   img6 = loadImage("assets/funhouse.png");
   img7 = loadImage("assets/sewers.png");
   memories = loadImage("assets/memorygirl.png");
+  gasMask = loadImage("assets/gasmask.png");
   stuffedbunnyWon = loadImage("assets/stuffedbunnywon.png");
   // Transparent bunny sprite used for dragging (user said stuffedBunny already exists; re-load to be safe)
   stuffedBunny = loadImage("assets/stuffedbunny.png");
