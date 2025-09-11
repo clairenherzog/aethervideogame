@@ -634,7 +634,7 @@ function draw() {
     push();
       translate(keyX, keyY);
       rotate(radians(30));
-      image(funhouseKey, keyX, keyY, keyW, keyH); // set keyW/keyH to your size
+      image(funhouseKey, 0, 0, keyW, keyH); // set keyW/keyH to your size
     pop();
     imageMode(CORNER);
     }
