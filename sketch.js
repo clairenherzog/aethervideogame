@@ -864,7 +864,7 @@ function mousePressed() {
   }
 
   // Map scene click handling
-  if (scene === "map") {
+  if (scene === "map" && !transitioningToMap) {
     for (let area of mapClickAreas) {
       if (mouseX >= area.minX && mouseX <= area.maxX && 
           mouseY >= area.minY && mouseY <= area.maxY) {
