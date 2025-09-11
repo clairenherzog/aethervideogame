@@ -743,7 +743,7 @@ if (bunnyAvailable && !bunnyInInventory) {
   push();
   imageMode(CENTER);
   if (stuffedBunny) {
-    image(stuffedBunny, bunnyX, bunnyY, 160, 160); // ⬅ bigger size here
+    image(stuffedBunny, bunnyX, bunnyY -75, 470, 470); // ⬅ bigger size here
   } else if (stuffedbunnyWon) {
     image(stuffedbunnyWon, bunnyX - 80, bunnyY - 80, 160, 160);
   }
