@@ -636,7 +636,7 @@ function draw() {
      exitSewerButton.hide();
   }
 }
-  } else if (scene === "memory") {
+   else if (scene === "memory") {
     drawMemorySequence();
    
     if (!memoryMusicStarted) {
