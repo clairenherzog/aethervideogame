@@ -1014,11 +1014,6 @@ function mousePressed() {
   // Prevent interactions during short transitions
   if (transitioningToRingToss) return;
 
-  // --- PRIORITIZE inventory window interactions ---
-  if (inventoryWindow) {
-    return;
-  }
-
   // --- If bunny overlay is showing AND bunny available, check for clicking the bunny to add to inventory ---
   if (scene === "scene2.0" && showBunnyOverlay && bunnyAvailable && !bunnyInInventory) {
     // bunny is drawn at bunnyX, bunnyY (usually width/2, height/2)
