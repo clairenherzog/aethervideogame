@@ -250,7 +250,7 @@ function playSceneMusic(sceneName) {
       break;
     case "sewers":
       if (sewerSound && sewerSound.isLoaded()) {
-        sewerSound.loop();
+        sewerSound.play();
         currentMusic = sceneName;
       }
       break;
