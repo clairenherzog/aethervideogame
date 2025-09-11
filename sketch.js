@@ -383,7 +383,6 @@ function setup() {
     playActionClick();
     scene = "map";
     exitSewerButton.hide();
-    // You may want to stop sewerSound here too, for safety:
     if (sewerSound && sewerSound.isPlaying()) sewerSound.stop();
   });
 
@@ -636,7 +635,7 @@ function draw() {
   } else {
      exitSewerButton.hide();
   }
-
+}
   } else if (scene === "memory") {
     drawMemorySequence();
    
