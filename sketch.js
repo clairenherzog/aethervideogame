@@ -646,6 +646,17 @@ function draw() {
     }
   } else if (scene == "sewers") {
     image(img7, 0, 0, width, height);
+    if (!inventoryItems.includes("gas mask")) {
+    imageMode(CENTER);
+    push();
+      translate(keyX, keyY);   // use same coordinates as funhouseKey
+      rotate(radians(30));     // same rotation for consistency
+      image(gasMask, 0, 0, keyW, keyH);
+    pop();
+    imageMode(CORNER);
+  }
+
+    
     if (sewerSound && !sewerSound.isPlaying()) {
       let canvasX = canvas.elt.getBoundingClientRect().left + window.scrollX;
       let canvasY = canvas.elt.getBoundingClientRect().top + window.scrollY;
@@ -657,8 +668,10 @@ function draw() {
   } else {
      exitSewerButton.hide();
   }
+    
+}
 
-  } else if (scene === "memory") {
+    else if (scene === "memory") {
     drawMemorySequence();
    
     if (!memoryMusicStarted) {
@@ -929,6 +942,16 @@ function draw() {
       image(funhouseKey, sx + 6, sy + 6, slotSize - 12, slotSize - 12);
     }
 
+    // Draw gas mask in inventory if collected
+    if (inventoryItems.includes("gas mask") && gasMask) {
+      let maskSlot = 0;
+      if (inventoryItems.includes("pink stuffed bunny")) maskSlot++;
+      if (inventoryItems.includes("funhouse key")) maskSlot++;
+      let sx = startX + maskSlot * (slotSize + 12);
+      let sy = startY;
+      image(gasMask, sx + 6, sy + 6, slotSize - 12, slotSize - 12);
+    }
+
     // show inventory exit button and position it relative to panel
     inventoryExitButton.show();
     // compute position for the inventoryExitButton so it sits top-right of the panel
@@ -1135,6 +1158,19 @@ function mousePressed() {
     }
     return;
   }
+
+  if (scene === "sewers" && !inventoryItems.includes("gas mask")) {
+  let d = dist(mouseX, mouseY, keyX, keyY);
+  if (d < keyW / 2) {
+    inventoryItems.push("gas mask");
+    playActionClick();
+    if (sewerSound && sewerSound.isLoaded()) {
+      sewerSound.stop();
+      sewerSound.play();
+    }
+    return;
+  }
+}
 
   // Dialogue advancement clicks (prologue/scene1.1)
   handleAdvance();
