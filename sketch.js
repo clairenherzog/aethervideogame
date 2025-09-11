@@ -383,6 +383,7 @@ function setup() {
     playActionClick();
     scene = "map";
     exitSewerButton.hide();
+    // You may want to stop sewerSound here too, for safety:
     if (sewerSound && sewerSound.isPlaying()) sewerSound.stop();
   });
 
@@ -524,7 +525,7 @@ function setupHTMLControls() {
             if (ringtossMemory && ringtossMemory.isPlaying()) ringtossMemory.stop();
             sewerSound.loop();
           } else {
-            sewerSound.loop();
+            sewerSound.stop();
           }
         } else {
           setTimeout(() => {
@@ -630,13 +631,13 @@ function draw() {
       exitSewerButton.position(
         canvasX + width / 2 - exitSewerButton.width / 2,
         canvasY + height - 60
-     );
+    );
      exitSewerButton.show();
-   } else {
+  } else {
      exitSewerButton.hide();
   }
-}
-   else if (scene === "memory") {
+
+  } else if (scene === "memory") {
     drawMemorySequence();
    
     if (!memoryMusicStarted) {
