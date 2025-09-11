@@ -77,6 +77,7 @@ let homepageSound;
 let carnivalSound;
 let actionclickSound;
 let funhouseSound;
+let funhouseMemory;
 let sewerSound;
 let canvas;
 let showBloodyScene = false; // Track whether to show bloody image
@@ -207,6 +208,10 @@ function preload() {
     () => console.log("Sewer sound loaded successfully"),
     () => console.log("Error loading sewer sound")
   );
+  funhouseMemory = loadSound("assets/memory3.mp3",
+    () => console.log("Funhouse memory sound loaded successfully"),
+    () => console.log("Error loading funhouse memory sound")
+  );                         
 }
 
 // Function to stop all music
@@ -389,7 +394,6 @@ function setup() {
     playActionClick();
     scene = "map";
     exitSewerButton.hide();
-    // You may want to stop sewerSound here too, for safety:
     if (sewerSound && sewerSound.isPlaying()) sewerSound.stop();
   });
 
@@ -644,7 +648,6 @@ function draw() {
    textSize(20);
    textAlign(LEFT, TOP);
    text("Mouse: (" + mouseX + ", " + mouseY + ")", 10, 10);
- }
   } else if (scene == "sewers") {
     image(img7, 0, 0, width, height);
     if (sewerSound && !sewerSound.isPlaying()) {
@@ -865,6 +868,8 @@ function draw() {
   }
 
   // Inventory window (fullscreen modal-like) if opened
+   // Inventory window (fullscreen modal-like) if opened
+  // Inventory window (fullscreen modal-like) if opened
   if (inventoryWindow) {
     // dark backdrop
     push();
@@ -872,11 +877,19 @@ function draw() {
     rect(0, 0, width, height);
     pop();
 
-    // inventory panel
+    // ====== FIX: declare panel vars OUTSIDE push/pop so they are available after push/pop ======
     let panelW = width * 0.8;
     let panelH = height * 0.75;
     let panelX = width * 0.1;
     let panelY = height * 0.12;
+    let cols = 4;
+    let padding = 18;
+    let slotSize = min(80, (panelW - padding * 2) / cols - 12);
+    let startX = panelX + padding;
+    let startY = panelY + 50;
+    // ====== END FIX ======
+
+    // inventory panel (start push)
     push();
     rectMode(CORNER);
     fill(20, 20, 30);
@@ -891,12 +904,6 @@ function draw() {
     text("Inventory", panelX + 18, panelY + 12);
 
     // Draw items inside inventory panel (grid)
-    let cols = 4;
-    let padding = 18;
-    let slotSize = min(80, (panelW - padding * 2) / cols - 12);
-    let startX = panelX + padding;
-    let startY = panelY + 50;
-
     // draw placeholder empty slots then items
     for (let r = 0; r < 2; r++) {
       for (let c = 0; c < cols; c++) {
@@ -916,13 +923,14 @@ function draw() {
       // draw bunny image scaled to slot
       image(stuffedBunny, sx + 6, sy + 6, slotSize - 12, slotSize - 12);
     }
-    pop();
+    pop(); // <-- The pop() is here, after all slot and bunny drawing
 
+    // Now draw the funhouse key (OUTSIDE push/pop)
     if (inventoryItems.includes("funhouse key") && funhouseKey) {
-     let keySlot = bunnyInInventory ? 1 : 0;
-     let sx = startX + keySlot * (slotSize + 12);
-     let sy = startY;
-     image(funhouseKey, sx + 6, sy + 6, slotSize - 12, slotSize - 12);
+      let keySlot = bunnyInInventory ? 1 : 0;
+      let sx = startX + keySlot * (slotSize + 12);
+      let sy = startY;
+      image(funhouseKey, sx + 6, sy + 6, slotSize - 12, slotSize - 12);
     }
 
     // show inventory exit button and position it relative to panel
