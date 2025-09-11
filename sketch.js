@@ -502,6 +502,22 @@ function setupHTMLControls() {
             if (funhouseSound && funhouseSound.isLoaded()) funhouseSound.loop();
           }, 100);
         }
+      } else if (scene === "sewers") {
+        if (sewerSound && sewerSound.isLoaded()) {
+          if (!sewerSound.isPlaying()) {
+            if (homepageSound && homepageSound.isPlaying()) homepageSound.stop();
+            if (carnivalSound && carnivalSound.isPlaying()) carnivalSound.stop();
+            if (funhouseSound && funhouseSound.isPlaying()) funhouseSound.stop();
+            if (ringtossMemory && ringtossMemory.isPlaying()) ringtossMemory.stop();
+            sewerSound.loop();
+          } else {
+            sewerSound.stop();
+          }
+        } else {
+          setTimeout(() => {
+            if (sewerSound && sewerSound.isLoaded()) sewerSound.loop();
+          }, 100);
+        }
       } else if (scene === "start" || scene === "prologue") {
         if (homepageSound && homepageSound.isLoaded()) {
           if (!homepageSound.isPlaying()) {
