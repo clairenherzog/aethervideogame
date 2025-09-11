@@ -768,8 +768,6 @@ else if (scene === "scene2.0") {
  // If the bunny is available and not yet in inventory, draw it 
 if (bunnyAvailable && !bunnyInInventory) {
   push();
-  bunnyX = width/2;
-  bunnyY = height/2;
   imageMode(CENTER);
   if (stuffedBunny) {
     image(stuffedBunny, bunnyX, bunnyY - 40, 80, 80); 
