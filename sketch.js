@@ -321,7 +321,7 @@ function setup() {
   proceedButton.style("border-radius", "5px");
   // *** END CHANGE 3 ***
   proceedButton.size(180, 40);
-  centerButtonOnCanvas(proceedButton, 40);
+  centerButtonOnCanvas(proceedButton, 60);
   proceedButton.hide(); 
   proceedButton.mousePressed(() => {
     playActionClick(); // Play click sound
