@@ -8,6 +8,7 @@ let img4; // bloody carousel scene
 let img5; // map for game 
 let img6;   // funhouse scene 
 let img7;   // sewer scene 
+let funhouseKey;
 let playImg; // play button
 let continueImg; // continue button
 let proceedImg; // proceed to mission button
@@ -172,6 +173,7 @@ function preload() {
   continueImg = loadImage("assets/continuebutton.png");
   proceedImg = loadImage("assets/proceedbutton.png");
   settings = loadImage("assets/settings.png");
+  funhouseKey = loadImage("assets/funhousekey.png");
   inventory = loadImage("assets/inventory.svg"); 
   // You can use the same image for map icon or create a smaller version
   mapIcon = loadImage("assets/map.png"); // or create a separate map icon image
