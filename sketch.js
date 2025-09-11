@@ -735,7 +735,7 @@ function draw() {
     if (inventory) {
       // draw inventory image centered in that rect
       imageMode(CENTER);
-      image(inventory, invX + invSize / 2, invY + invSize / 2, invSize - 6, invSize - 6);
+      image(inventory, invX, invY, invSize, invSize);
       imageMode(CORNER);
     }
     pop();
@@ -1055,8 +1055,8 @@ function windowResized() {
   centerButtonOnCanvas(proceedButton, 40);
 
   // Recompute inventory coordinates for new width
-  invSize = 44;
-  invX = width - 130;
+  invSize = 30;
+  invX = width - 120;
   invY = 10;
 
   // re-center bunny
