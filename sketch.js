@@ -278,8 +278,8 @@ function setup() {
     showBloodyScene = false;
 
     transitioningToMap = true;
-  setTimeout(() => {
-    transitioningToMap = false;
+    setTimeout(() => {
+      transitioningToMap = false;
   }, 300); // 300ms should be enough
 });
   // NEW: inventory exit button (for inventory window)
