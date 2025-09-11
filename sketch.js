@@ -15,6 +15,7 @@ let mapIcon; // map icon for navigation
 let transitioningToMap = false;
 let scene = "start"; // keeps track of which screen to show
 let playButton;
+let exitSewerButton;
 let homepageFont;
 let buttonFont;
 let stuffedbunnyWon;
@@ -347,7 +348,7 @@ function setup() {
     }, 300); // 300ms should be enough
   });
 
-  memoryExitButton = createButton("return to map");
+  memoryExitButton = createButton("exit memory");
   memoryExitButton.style("color", "white");
   memoryExitButton.style("background-color", "transparent");
   memoryExitButton.style("border", "2px solid white");
@@ -370,6 +371,20 @@ function setup() {
     setTimeout(() => { 
       transitioningToMap = false;
     }, 300);
+  });
+    exitSewerButton = createButton("exit sewer");
+  exitSewerButton.style("color", "white");
+  exitSewerButton.style("background-color", "transparent");
+  exitSewerButton.style("border", "2px solid white");
+  exitSewerButton.style("border-radius", "5px");
+  exitSewerButton.size(120, 38);
+  exitSewerButton.hide();
+  exitSewerButton.mousePressed(() => {
+    playActionClick();
+    scene = "map";
+    exitSewerButton.hide();
+    // You may want to stop sewerSound here too, for safety:
+    if (sewerSound && sewerSound.isPlaying()) sewerSound.stop();
   });
 
   // NEW: inventory exit button (for inventory window)
@@ -610,6 +625,18 @@ function draw() {
     image(img6, 0, 0, width, height);
   } else if (scene == "sewers") {
     image(img7, 0, 0, width, height);
+    if (sewerSound && !sewerSound.isPlaying()) {
+      let canvasX = canvas.elt.getBoundingClientRect().left + window.scrollX;
+      let canvasY = canvas.elt.getBoundingClientRect().top + window.scrollY;
+      exitSewerButton.position(
+        canvasX + width / 2 - exitSewerButton.width / 2,
+        canvasY + height - 60
+    );
+     exitSewerButton.show();
+  } else {
+     exitSewerButton.hide();
+  }
+
   } else if (scene === "memory") {
     drawMemorySequence();
    
