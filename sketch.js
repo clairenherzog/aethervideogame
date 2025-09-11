@@ -276,8 +276,12 @@ function setup() {
     typingActive11 = false;
     // Reset bloody scene flag when entering map
     showBloodyScene = false;
-  });
 
+    transitioningToMap = true;
+  setTimeout(() => {
+    transitioningToMap = false;
+  }, 300); // 300ms should be enough
+});
   // NEW: inventory exit button (for inventory window)
   inventoryExitButton = createButton("exit");
   inventoryExitButton.style("color", "white");
