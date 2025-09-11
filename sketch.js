@@ -9,6 +9,10 @@ let img5; // map for game
 let img6;   // funhouse scene 
 let img7;   // sewer scene 
 let funhouseKey;
+let keyX = 300; // adjust as you want
+let keyY = 250;
+let keyW = 60;
+let keyH = 60;
 let playImg; // play button
 let continueImg; // continue button
 let proceedImg; // proceed to mission button
@@ -625,6 +629,11 @@ function draw() {
     }
   } else if (scene === "funhouse") {
     image(img6, 0, 0, width, height);
+    if (!inventoryItems.includes("funhouse key")) {
+    imageMode(CENTER);
+    image(funhouseKey, keyX, keyY, keyW, keyH); // set keyW/keyH to your size
+    imageMode(CORNER);
+    }
   } else if (scene == "sewers") {
     image(img7, 0, 0, width, height);
     if (sewerSound && !sewerSound.isPlaying()) {
@@ -898,6 +907,13 @@ function draw() {
     }
     pop();
 
+    if (inventoryItems.includes("funhouse key") && funhouseKey) {
+     let keySlot = bunnyInInventory ? 1 : 0;
+     let sx = startX + keySlot * (slotSize + 12);
+     let sy = startY;
+     image(funhouseKey, sx + 6, sy + 6, slotSize - 12, slotSize - 12);
+    }
+
     // show inventory exit button and position it relative to panel
     inventoryExitButton.show();
     // compute position for the inventoryExitButton so it sits top-right of the panel
@@ -1014,7 +1030,15 @@ function mousePressed() {
       return;
     }
   }
-
+  if (scene === "funhouse" && !inventoryItems.includes("funhouse key")) {
+    let d = dist(mouseX, mouseY, keyX, keyY);
+    if (d < keyW / 2) { // assuming the key is roughly square/circular
+    inventoryItems.push("funhouse key");
+    playActionClick(); // optional: play your click sound
+    return; // prevent further click handling
+  }
+}
+  
   // settings click
   if (mouseX > width - 40 && mouseX < width - 10 && mouseY > 10 && mouseY < 40) {
     playActionClick();
