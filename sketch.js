@@ -644,6 +644,7 @@ function draw() {
    textSize(20);
    textAlign(LEFT, TOP);
    text("Mouse: (" + mouseX + ", " + mouseY + ")", 10, 10);
+  }
   } else if (scene == "sewers") {
     image(img7, 0, 0, width, height);
     if (sewerSound && !sewerSound.isPlaying()) {
