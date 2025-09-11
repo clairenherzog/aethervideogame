@@ -90,7 +90,6 @@ let mapClickAreas = [
     maxY: 327, // adjust these coordinates for "ride the carousel" text
     scene: "scene1.1"
   },
-
   { 
     name: "ringtoss", 
     minX: 274, 
@@ -99,7 +98,6 @@ let mapClickAreas = [
     maxY: 188, // adjust these coordinates for "play ringtoss" text
     scene: "scene2.0"
   },
-
   {
     name: "funhouse",
     minX: 52,
@@ -115,7 +113,6 @@ let mapClickAreas = [
    minY: 408, 
    maxY: 495,
    scene: "sewers"
-
   }
 ];
 
@@ -149,6 +146,7 @@ let bunnyInInventory = false;
 let inventoryItems = []; // list of strings / items placed in inventory
 let inventoryWindow = false; // shows full-screen inventory window
 let inventoryExitButton; // exit button for inventory window
+let bunnyX, bunnyY; // bunny position variables
 
 function isMobile() {
   return /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
@@ -200,7 +198,7 @@ function preload() {
   );
   sewerSound = loadSound("assets/memory2.mp3",
     () => console.log("Sewer sound loaded successfully"),
-    () => console.log("Sewer sound loaded successfully"),
+    () => console.log("Error loading sewer sound")
   );
 }
 
@@ -346,8 +344,8 @@ function setup() {
     transitioningToMap = true;
     setTimeout(() => {
       transitioningToMap = false;
-  }, 300); // 300ms should be enough
-});
+    }, 300); // 300ms should be enough
+  });
 
   memoryExitButton = createButton("return to map");
   memoryExitButton.style("color", "white");
@@ -358,21 +356,22 @@ function setup() {
   centerButtonOnCanvas(memoryExitButton, 60);
   memoryExitButton.hide(); 
   memoryExitButton.mousePressed(() => {
-  playActionClick(); // Play click sound
-  transitioningToMap = true;
-  scene= "map";
-  memoryExitButton.hide();
-  showMemorySequence = false;
-  memoryMusicStarted = false;
-  // Stop memory music and play map music (which stops all music)
-  if (ringtossMemory && ringtossMemory.isPlaying()) {
-    ringtossMemory.stop();
-  }
-  playSceneMusic("map");
-  setTimeout(() => { 
-    transitioningToMap = false;
-  }, 300);
-});
+    playActionClick(); // Play click sound
+    transitioningToMap = true;
+    scene = "map";
+    memoryExitButton.hide();
+    showMemorySequence = false;
+    memoryMusicStarted = false;
+    // Stop memory music and play map music (which stops all music)
+    if (ringtossMemory && ringtossMemory.isPlaying()) {
+      ringtossMemory.stop();
+    }
+    playSceneMusic("map");
+    setTimeout(() => { 
+      transitioningToMap = false;
+    }, 300);
+  });
+
   // NEW: inventory exit button (for inventory window)
   inventoryExitButton = createButton("exit");
   inventoryExitButton.style("color", "white");
@@ -661,9 +660,6 @@ function draw() {
     textSize(min(16, width * 0.03));
     textAlign(LEFT, TOP);
     text(displayText, bubbleX + pad, bubbleY + pad, bubbleW - 2 * pad, bubbleH - 2 * pad);
-
-
-
   } else if (scene === "scene2.0") {
     // ring toss scene
     image(img2, 0, 0, width, height);
@@ -791,25 +787,24 @@ function draw() {
         mapBoxX + mapBoxSize / 2,
         mapBoxY + mapBoxSize / 2,
         mapIconSize,
-       mapIconSize
-     );
+        mapIconSize
+      );
+      imageMode(CORNER);
+    }
+  }
+
+  // If the bunny is available and not yet in inventory, draw it bigger
+  if (bunnyAvailable && !bunnyInInventory) {
+    push();
+    imageMode(CENTER);
+    if (stuffedBunny) {
+      image(stuffedBunny, bunnyX, bunnyY -75, 470, 470); // ⬅ bigger size here
+    } else if (stuffedbunnyWon) {
+      image(stuffedbunnyWon, bunnyX - 80, bunnyY - 80, 160, 160);
+    }
     imageMode(CORNER);
+    pop();
   }
-}
-
- // If the bunny is available and not yet in inventory, draw it bigger
-if (bunnyAvailable && !bunnyInInventory) {
-  push();
-  imageMode(CENTER);
-  if (stuffedBunny) {
-    image(stuffedBunny, bunnyX, bunnyY -75, 470, 470); // ⬅ bigger size here
-  } else if (stuffedbunnyWon) {
-    image(stuffedbunnyWon, bunnyX - 80, bunnyY - 80, 160, 160);
-  }
-  imageMode(CORNER);
-  pop();
-}
-
 
   // If bunny is in inventory, show a small indicator on the inventory box (a dot or thumbnail)
   if (bunnyInInventory) {
