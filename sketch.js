@@ -12,6 +12,7 @@ let playImg; // play button
 let continueImg; // continue button
 let proceedImg; // proceed to mission button
 let mapIcon; // map icon for navigation
+let transitioningToMap = false;
 let scene = "start"; // keeps track of which screen to show
 let playButton;
 let homepageFont;
