@@ -431,9 +431,9 @@ function createParticle() {
   return {
     x: random(width),
     y: -10,
-    speed: random(3, 8),
-    width: random(1, 2),
-    height: random(15, 25),
+    speed: random(1, 10),
+    width: random(4, 7),
+    height: random(4, 7),
     opacity: random(150, 255),
     drift: random(-0.2, 0.2)
   };
@@ -891,9 +891,10 @@ function draw() {
     let panelH = height * 0.75;
     let panelX = width * 0.1;
     let panelY = height * 0.12;
-    let cols = 4;
+    let cols = 1;
+    let rows = 3;
     let padding = 18;
-    let slotSize = min(80, (panelW - padding * 2) / cols - 12);
+    let slotSize = min(80, (panelW - padding * 2) / rows - 12);
     let startX = panelX + padding;
     let startY = panelY + 50;
     // ====== END FIX ======
@@ -914,14 +915,12 @@ function draw() {
 
     // Draw items inside inventory panel (grid)
     // draw placeholder empty slots then items
-    for (let r = 0; r < 2; r++) {
-      for (let c = 0; c < cols; c++) {
-        let sx = startX + c * (slotSize + 12);
-        let sy = startY + r * (slotSize + 12);
-        stroke(120);
-        noFill();
-        rect(sx, sy, slotSize, slotSize, 6);
-      }
+    for (let r = 0; r < rows; r++) {
+     let sx = startX;
+     let sy = startY + r * (slotSize + 12);
+     stroke(120);
+      noFill();
+      rect(sx, sy, slotSize, slotSize, 6);
     }
 
     // If bunny is in inventory, draw it in first slot
