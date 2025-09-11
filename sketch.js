@@ -60,9 +60,9 @@ let messages2 = [
   "they are trivial, in the end.", 
   "but I know you must be looking, for something, or someone...",
   "this place, is not as it seems.", 
-  "you must be gone, before first light,", 
-  "before the beasts come out to play.",
-  "you must go, now, and remember my warning."
+  "Take care in your journey..", 
+  "this place is full of rich stories to uncover",
+  "but you must first prove you are worthy of hearing them."
 ];
 
 let typingActive11 = false;
@@ -340,8 +340,8 @@ function setup() {
   proceedButton.style("border", "2px solid white");
   proceedButton.style("border-radius", "5px");
   // *** END CHANGE 3 ***
-  proceedButton.size(180, 40);
-  centerButtonOnCanvas(proceedButton, 60);
+  proceedButton.size(140, 30);
+  centerButtonOnCanvas(proceedButton, 90);
   proceedButton.hide(); 
   proceedButton.mousePressed(() => {
     playActionClick(); // Play click sound
@@ -431,12 +431,24 @@ function createParticle() {
   return {
     x: random(width),
     y: -10,
-    speed: random(1, 10),
-    width: random(4, 7),
-    height: random(4, 7),
-    opacity: random(150, 255),
-    drift: random(-0.2, 0.2)
+    speed: random(1, 3),
+    size: random(0.5, 3),
+    opacity: random(80, 180),
+    drift: random(-0.4, 0.4), 
+    seed: random(1000)
   };
+}
+
+function drawIrregularAsh(x, y, size, seed) {
+  beginShape();
+  let steps = int(random(6, 9)); // fewer points = chunkier, more lumpy
+  for (let i = 0; i < steps; i++) {
+    let angle = map(i, 0, steps, 0, TWO_PI);
+    // Increase 0.7–1.5 for more wobble, and up the noise range a bit
+    let r = size * (0.7 + noise(seed + cos(angle) * 1.2, seed + sin(angle) * 1.2) * 1.2);
+    vertex(x + cos(angle) * r, y + sin(angle) * r);
+  }
+  endShape(CLOSE);
 }
 
 function updateParticles() {
@@ -444,13 +456,13 @@ function updateParticles() {
     particles.push(createParticle());
   }
   for (let i = particles.length - 1; i >= 0; i--) {
-    let p = particles[i];
-    p.y += p.speed;
-    p.x += p.drift;
-    fill(255, 255, 255, p.opacity);
-    noStroke();
-    ellipse(p.x, p.y, p.width, p.height);
-    if (p.y > height + 20) particles.splice(i, 1);
+  let p = particles[i];
+  p.y += p.speed;
+  p.x += p.drift;
+  fill(200, 200, 200, p.opacity); // slightly gray for ash
+  noStroke();
+  drawIrregularAsh(p.x, p.y, p.size, p.seed); // <-- use new function
+  if (p.y > height + 20) particles.splice(i, 1);
   }
 }
 
