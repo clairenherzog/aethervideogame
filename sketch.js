@@ -902,32 +902,25 @@ function mousePressed() {
 
   // --- PRIORITIZE inventory window interactions ---
   if (inventoryWindow) {
+    // If inventory window is open, clicking inside should not trigger other scene clicks.
+    // We keep the inventoryExitButton to close it (handled by its mousePressed).
     return;
   }
 
-  // --- If bunny overlay is showing AND bunny available, check for clicking the bunny to add to inventory ---
+  // --- If bunny overlay is showing AND bunny available, check for grabbing the bunny first ---
   if (scene === "scene2.0" && showBunnyOverlay && bunnyAvailable && !bunnyInInventory) {
-    // bunny is drawn at bunnyX, bunnyY (usually width/2, height/2)
+    // bunny drawn using imageMode(CENTER) at bunnyX,bunnyY with size 120
     let d = dist(mouseX, mouseY, bunnyX, bunnyY);
-    if (d < 80) { // Clicked bunny
-      bunnyInInventory = true;
-      bunnyAvailable = false;
-      if (!inventoryItems.includes("pink stuffed bunny")) {
-        inventoryItems.push("pink stuffed bunny");
-      }
-      showMemorySequence = true;
-      memorySequenceStartTime = millis();
-      memoryMusicStarted = false;
-      playSceneMusic("memory");
-      setTimeout(() => {
-        scene = "memory";
-      }, 100);
-      playActionClick();
-      return; // Stop further processing!
+    if (d < 60) { // clicked bunny
+      bunnyDragging = true;
+      bunnyOffsetX = bunnyX - mouseX;
+      bunnyOffsetY = bunnyY - mouseY;
+      return; // don't process other clicks
     }
   }
 
   // --- Inventory icon click (open inventory window) ---
+  // check inventory rect first (so it doesn't get swallowed by map/settings)
   if (scene !== "start") {
     if (mouseX >= invX && mouseX <= invX + invSize && mouseY >= invY && mouseY <= invY + invSize) {
       playActionClick();
@@ -959,7 +952,9 @@ function mousePressed() {
     showBunnyOverlay = false;
     bunnyOverlayStartTime = 0;
     exitButton.hide();
+    // Reset bunny/inventory state? (we keep inventory persistent)
     bunnyAvailable = false;
+    bunnyDragging = false;
     return;
   }
 
@@ -1016,7 +1011,53 @@ function mousePressed() {
   }
 
   // Dialogue advancement clicks (prologue/scene1.1)
+  console.log("Dialogue click in scene:", scene, "- no sound should play");
   handleAdvance();
+}
+
+function mouseDragged() {
+  // If dragging bunny, update its coords
+  if (bunnyDragging) {
+    bunnyX = mouseX + bunnyOffsetX;
+    bunnyY = mouseY + bunnyOffsetY;
+  }
+}
+
+function mouseReleased() {
+ if (bunnyDragging) {
+    if (
+      bunnyX >= invX &&
+      bunnyX <= invX + invSize &&
+      bunnyY >= invY &&
+      bunnyY <= invY + invSize
+    ) {
+      bunnyInInventory = true;
+      bunnyAvailable = false;
+      bunnyDragging = false;
+      if (!inventoryItems.includes("pink stuffed bunny")) {
+        inventoryItems.push("pink stuffed bunny");
+      }
+      showMemorySequence = true;
+      memorySequenceStartTime = millis();
+      memoryMusicStarted = false;
+
+      // 🔥 Play the memory music NOW, on user input!
+      playSceneMusic("memory");
+
+      setTimeout(() => {
+        scene = "memory";
+      }, 100);
+
+      playActionClick();
+    } else {
+      // release in world — bunny returns to default place
+      bunnyDragging = false;
+      // optional: snap back to a comfortable resting spot
+      bunnyX = width / 2;
+      bunnyY = height * 0.65;
+      return;
+    }
+  }
 }
 
 function goToMap() {
