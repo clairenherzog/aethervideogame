@@ -9,10 +9,10 @@ let img5; // map for game
 let img6;   // funhouse scene 
 let img7;   // sewer scene 
 let funhouseKey;
-let keyX = 300; // adjust as you want
+let keyX = 100; // adjust as you want
 let keyY = 250;
-let keyW = 60;
-let keyH = 60;
+let keyW = 150;
+let keyH = 150;
 let playImg; // play button
 let continueImg; // continue button
 let proceedImg; // proceed to mission button
