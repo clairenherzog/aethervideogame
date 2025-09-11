@@ -1020,15 +1020,16 @@ function mouseDragged() {
 }
 
 function mouseReleased() {
-  // If we were dragging the bunny, check for drop into inventory rect
-  if (bunnyDragging) {
-    // Check if bunny center is inside inventory area
-    if (bunnyX >= invX && bunnyX <= invX + invSize && bunnyY >= invY && bunnyY <= invY + invSize) {
-      // Put bunny into inventory
+ if (bunnyDragging) {
+    if (
+      bunnyX >= invX &&
+      bunnyX <= invX + invSize &&
+      bunnyY >= invY &&
+      bunnyY <= invY + invSize
+    ) {
       bunnyInInventory = true;
       bunnyAvailable = false;
       bunnyDragging = false;
-      // add an identifier to inventory items
       if (!inventoryItems.includes("pink stuffed bunny")) {
         inventoryItems.push("pink stuffed bunny");
       }
@@ -1036,9 +1037,13 @@ function mouseReleased() {
       memorySequenceStartTime = millis();
       memoryMusicStarted = false;
 
+      // 🔥 Play the memory music NOW, on user input!
+      playSceneMusic("memory");
+
       setTimeout(() => {
-        scene = "memory"; // don’t fall through to map!
+        scene = "memory";
       }, 100);
+
       playActionClick();
     } else {
       // release in world — bunny returns to default place
