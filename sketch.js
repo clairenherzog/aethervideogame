@@ -672,7 +672,7 @@ function draw() {
       
       // Draw the bunny overlay if it's time
       if (showBunnyOverlay && stuffedbunnyWon) {
-        image(stuffedbunnyWon, 0, 0, width, height);
+        image(stuffedbunnyWon, width/2, height/2, 100, 100);
       }
 
       // --- NEW: handle the sequential messages and make bunny clickable after ---
@@ -747,9 +747,9 @@ if (bunnyAvailable && !bunnyInInventory) {
   push();
   imageMode(CENTER);
   if (stuffedBunny) {
-    image(stuffedBunny, bunnyX, bunnyY -75, 470, 470); // ⬅ bigger size here
+    image(stuffedBunny, bunnyX, bunnyY, 80, 80); // ⬅ bigger size here
   } else if (stuffedbunnyWon) {
-    image(stuffedbunnyWon, bunnyX - 80, bunnyY - 80, 160, 160);
+    image(stuffedbunnyWon, bunnyX, bunnyY, 80, 80);
   }
   imageMode(CORNER);
   pop();
