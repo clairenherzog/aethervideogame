@@ -891,7 +891,8 @@ function draw() {
     let panelH = height * 0.75;
     let panelX = width * 0.1;
     let panelY = height * 0.12;
-    let cols = 4;
+    let cols = 3;
+    let rows = 1;
     let padding = 18;
     let slotSize = min(80, (panelW - padding * 2) / cols - 12);
     let startX = panelX + padding;
