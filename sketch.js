@@ -682,7 +682,7 @@ else if (scene === "scene2.0") {
     if (showBunnyOverlay && stuffedbunnyWon) {
       push();
       imageMode(CENTER);
-      image(stuffedbunnyWon, width / 2, height / 2, 160, 160);
+      image(stuffedbunnyWon, width / 2, height / 2, 60, 60);
       pop();
     }
 
