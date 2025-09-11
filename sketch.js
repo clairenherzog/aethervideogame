@@ -250,7 +250,7 @@ function playSceneMusic(sceneName) {
       break;
     case "sewers":
       if (sewerSound && sewerSound.isLoaded()) {
-        sewerSound.play();
+        sewerSound.loop();
         currentMusic = sceneName;
       }
       break;
@@ -522,13 +522,13 @@ function setupHTMLControls() {
             if (carnivalSound && carnivalSound.isPlaying()) carnivalSound.stop();
             if (funhouseSound && funhouseSound.isPlaying()) funhouseSound.stop();
             if (ringtossMemory && ringtossMemory.isPlaying()) ringtossMemory.stop();
-            sewerSound.play();
+            sewerSound.loop();
           } else {
-            sewerSound.play();
+            sewerSound.loop();
           }
         } else {
           setTimeout(() => {
-            if (sewerSound && sewerSound.isLoaded()) sewerSound.play();
+            if (sewerSound && sewerSound.isLoaded()) sewerSound.loop();
           }, 100);
         }
       } else if (scene === "start" || scene === "prologue") {
