@@ -21,6 +21,12 @@ let stuffedbunnyWon;
 let stuffedBunny; // transparent bunny used for dragging (user said this variable exists)
 let showBunnyOverlay = false;
 let bunnyOverlayStartTime = 0;
+let showMemorySequence = false;
+let memorySequenceStartTime = 0;
+let memorySequenceDuration = 90000; // 4 seconds
+let ringtossMemory;
+let memoryExitButton; // exit button for memory scene
+let memoryMusicStarted = false; // track if memory music has started
 let messages1 = [
   "Agent ***,",
   "As a loyal subject to the Federal Bureau of Investigation,",
@@ -62,11 +68,11 @@ let proceedButton;
 let inventory; // inventory icon image
 let homepageSound;
 let carnivalSound;
-let ringtossSound;
 let actionclickSound;
 let funhouseSound;
 let canvas;
 let showBloodyScene = false; // Track whether to show bloody image
+let currentMusic = null;
 
 // Radioactive rain particles system
 let particles = [];
@@ -178,7 +184,7 @@ function preload() {
     () => console.log("Carnival sound loaded successfully"),
     () => console.log("Error loading carnival sound")
   );
-  ringtossSound = loadSound("assets/ringtossmemory.mp3",
+  ringtossMemory = loadSound("assets/ringtossmemory.mp3",
     () => console.log("Ring toss sound loaded successfully"),
     () => console.log("Error loading ring toss sound")
   );
@@ -282,6 +288,27 @@ function setup() {
       transitioningToMap = false;
   }, 300); // 300ms should be enough
 });
+
+  memoryExitButton = createButton("return to map");
+  memoryExitButton.style("color", "white");
+  memoryExitButton.style("background-color", "transparent");
+  memoryExitButton.style("border", "2px solid white");
+  memoryExitButton.style("border-radius", "5px");
+  memoryExitButton.size(140, 30);
+  centerButtonOnCanvas(memoryExitButton, 40);
+  memoryExitButton.hide(); 
+  memoryExitButton.mousePressed(() => {
+  playActionClick(); // Play click sound
+  goToMap();
+  memoryExitButton.hide();
+  showMemorySequence = false;
+  memoryMusicStarted = false;
+  // Stop memory music and play map music (which stops all music)
+  if (ringtossMemory && ringtossMemory.isPlaying()) {
+    ringtossMemory.stop();
+  }
+  playSceneMusic("map");
+});
   // NEW: inventory exit button (for inventory window)
   inventoryExitButton = createButton("exit");
   inventoryExitButton.style("color", "white");
@@ -350,7 +377,7 @@ function setupHTMLControls() {
     const initialVol = parseFloat(vol.value);
     if (homepageSound) homepageSound.setVolume(initialVol);
     if (carnivalSound) carnivalSound.setVolume(initialVol);
-    if (ringtossSound) ringtossSound.setVolume(initialVol);
+    if (ringtossMound) ringtossMound.setVolume(initialVol);
     if (funhouseSound) funhouseSound.setVolume(initialVol);
     if (actionclickSound) actionclickSound.setVolume(initialVol * 0.7);
     volVal.textContent = initialVol.toFixed(2);
@@ -358,7 +385,7 @@ function setupHTMLControls() {
       const v = parseFloat(vol.value);
       if (homepageSound) homepageSound.setVolume(v);
       if (carnivalSound) carnivalSound.setVolume(v);
-      if (ringtossSound) ringtossSound.setVolume(v);
+      if (ringtossMemory) ringtossMemory.setVolume(v);
       if (funhouseSound) funhouseSound.setVolume(v);
       if (actionclickSound) actionclickSound.setVolume(v * 0.7);
       volVal.textContent = v.toFixed(2);
@@ -374,7 +401,7 @@ function setupHTMLControls() {
         if (carnivalSound && carnivalSound.isLoaded()) {
           if (!carnivalSound.isPlaying()) {
             if (homepageSound && homepageSound.isPlaying()) homepageSound.stop();
-            if (ringtossSound && ringtossSound.isPlaying()) ringtossSound.stop();
+            if (ringtossMemory && ringtossMemory.isPlaying()) ringtossMemory.stop();
             if (funhouseSound && funhouseSound.isPlaying()) funhouseSound.stop();
             carnivalSound.loop();
           } else carnivalSound.stop();
@@ -384,16 +411,16 @@ function setupHTMLControls() {
           }, 100);
         }
       } else if (scene === "scene2.0") {
-        if (ringtossSound && ringtossSound.isLoaded()) {
-          if (!ringtossSound.isPlaying()) {
+        if (ringtossMemory && ringtossMemory.isLoaded()) {
+          if (!ringtossMemory.isPlaying()) {
             if (homepageSound && homepageSound.isPlaying()) homepageSound.stop();
             if (carnivalSound && carnivalSound.isPlaying()) carnivalSound.stop();
             if (funhouseSound && funhouseSound.isPlaying()) funhouseSound.stop();
-            ringtossSound.loop();
-          } else ringtossSound.stop();
+            ringtossMemory.loop();
+          } else ringtossMemory.stop();
         } else {
           setTimeout(() => {
-            if (ringtossSound && ringtossSound.isLoaded()) ringtossSound.loop();
+            if (ringtossMemory && ringtossMemory.isLoaded()) ringtossMemory.loop();
           }, 100);
         }
       } else if (scene === "funhouse") {
@@ -401,7 +428,7 @@ function setupHTMLControls() {
           if (!funhouseSound.isPlaying()) {
             if (homepageSound && homepageSound.isPlaying()) homepageSound.stop();
             if (carnivalSound && carnivalSound.isPlaying()) carnivalSound.stop();
-            if (ringtossSound && ringtossSound.isPlaying()) ringtossSound.stop();
+            if (ringtossMemory && ringtossMemory.isPlaying()) ringtossMemory.stop();
             funhouseSound.loop();
           } else funhouseSound.stop();
         } else {
@@ -413,7 +440,7 @@ function setupHTMLControls() {
         if (homepageSound && homepageSound.isLoaded()) {
           if (!homepageSound.isPlaying()) {
             if (carnivalSound && carnivalSound.isPlaying()) carnivalSound.stop();
-            if (ringtossSound && ringtossSound.isPlaying()) ringtossSound.stop();
+            if (ringtossMemory && ringtossMemory.isPlaying()) ringtossMemory.stop();
             if (funhouseSound && funhouseSound.isPlaying()) funhouseSound.stop();
             homepageSound.loop();
           } else homepageSound.stop();
@@ -501,6 +528,18 @@ function draw() {
     image(img6, 0, 0, width, height);
   } else if (scene == "sewers") {
     image(img7, 0, 0, width, height);
+  } else if (scene === "memory") {
+    drawMemorySequence();
+   
+    if (!memoryMusicStarted) {
+        playSceneMusic("memory");
+        memoryMusicStarted = true;
+    }
+    // Check if memory music has finished playing
+    if (ringtossMemory && !ringtossMemory.isPlaying() && memoryMusicStarted) {
+        // Show exit button when music finishes
+        memoryExitButton.show();
+    }
   } else if (scene === "scene1.1") {
     if (currentMsg > 6 || (currentMsg === 6 && charIndex === messages2[6].length)) {
       showBloodyScene = true;
@@ -941,8 +980,14 @@ function mouseReleased() {
       if (!inventoryItems.includes("pink stuffed bunny")) {
         inventoryItems.push("pink stuffed bunny");
       }
+      showMemorySequence = true;
+      memorySequenceStartTime = millis();
+      memoryMusicStarted = false;
+
+      setTimeout(() => {
+        scene = "memory"; // don’t fall through to map!
+      }, 100);
       playActionClick();
-      return;
     } else {
       // release in world — bunny returns to default place
       bunnyDragging = false;
@@ -990,3 +1035,77 @@ function windowResized() {
   bunnyX = width / 2;
   bunnyY = height * 0.65;
 }
+
+function drawMemorySequence() {
+  background(0);
+  
+  // --- MUCH lighter glitch noise layer (only 200-500 particles instead of 20,050!) ---
+  let glitchCount = random(200, 500); // Vary the amount for more organic feel
+  for (let i = 0; i < glitchCount; i++) {
+    let x = random(width);
+    let y = random(height);
+    
+    // occasional horizontal glitch band
+    if (random(1) < 0.1) {
+      x = random(width);
+      y = int(random(height / 15)) * 15 + random(-2, 2);
+      // make horizontal bands wider
+      let bandWidth = random(10, width * 0.3);
+      let bandHeight = random(1, 3);
+      fill(255, random(100, 255));
+      noStroke();
+      rect(x, y, bandWidth, bandHeight);
+    } else {
+      // regular glitch pixels
+      let w = random(1, 3);
+      let h = random(1, 2);
+      fill(255, random(80, 255));
+      noStroke();
+      rect(x, y, w, h);
+    }
+  }
+  
+  // --- ellipse mask for "memories" image ---
+  if (memories) {
+    push();
+    
+    // Simple approach - draw a mask using p5.js native functions
+    // Create a graphics buffer for masking
+    let maskGraphics = createGraphics(width, height);
+    maskGraphics.fill(255);
+    maskGraphics.ellipse(width/2, height/2, 300, 400); // Adjust size as needed
+    
+    // Draw the image
+    push();
+    imageMode(CENTER);
+    image(memories, width/2, height/2, 300, 400);
+    pop();
+    
+    // Apply mask effect by drawing black around the ellipse
+    fill(0);
+    noStroke();
+    // Top rectangle
+    rect(0, 0, width, height/2 - 200);
+    // Bottom rectangle  
+    rect(0, height/2 + 200, width, height/2 - 200);
+    // Left rectangle
+    rect(0, height/2 - 200, width/2 - 150, 400);
+    // Right rectangle
+    rect(width/2 + 150, height/2 - 200, width/2 - 150, 400);
+    
+    // Draw ellipse border for cleaner edge
+    noFill();
+    stroke(100);
+    strokeWeight(2);
+    ellipse(width/2, height/2, 300, 400);
+    
+    pop();
+  }
+  
+  // --- subtle flickering overlay ---
+  if (random(1) < 0.3) { // Only flicker 30% of the time
+    fill(255, random(5, 25));
+    noStroke();
+    rect(0, 0, width, height);
+  }
+
