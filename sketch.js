@@ -200,7 +200,317 @@ function preload() {
   );
 }
 
-// ... [all your code above is unchanged] ...
+// Function to stop all music
+function stopAllMusic() {
+  if (homepageSound && homepageSound.isPlaying()) homepageSound.stop();
+  if (carnivalSound && carnivalSound.isPlaying()) carnivalSound.stop();
+  if (funhouseSound && funhouseSound.isPlaying()) funhouseSound.stop();
+  if (ringtossMemory && ringtossMemory.isPlaying()) ringtossMemory.stop();
+  currentMusic = null;
+}
+
+// Function to play specific music for a scene
+function playSceneMusic(sceneName) {
+  // Don't restart the same music
+  if (currentMusic === sceneName) return;
+  
+  stopAllMusic();
+  
+  switch(sceneName) {
+    case "start":
+    case "prologue":
+      if (homepageSound && homepageSound.isLoaded()) {
+        homepageSound.loop();
+        currentMusic = sceneName;
+      }
+      break;
+    case "scene1.1":
+      if (carnivalSound && carnivalSound.isLoaded()) {
+        carnivalSound.loop();
+        currentMusic = sceneName;
+      }
+      break;
+    case "memory":
+      if (ringtossMemory && ringtossMemory.isLoaded()) {
+        ringtossMemory.play();
+        currentMusic = sceneName;
+      }
+      break;
+    case "funhouse":
+      if (funhouseSound && funhouseSound.isLoaded()) {
+        funhouseSound.loop();
+        currentMusic = sceneName;
+      }
+      break;
+    case "map":
+    case "sewers":
+      // These scenes have no music, just stop current music
+      stopAllMusic();
+      break;
+  }
+}
+
+function setup() {
+  let w, h;
+  if (isMobile()) {
+    w = windowWidth;
+    h = windowHeight;
+  } else {
+    w = 450;
+    h = 500;
+  }
+  canvas = createCanvas(w, h);
+  canvas.parent('sketch');  
+  imageMode(CORNER);
+  
+  fill("white");
+  textFont(homepageFont);
+  textSize(36);  
+  text('aether', 10, 50);
+   
+  playButton = createButton("play");
+  playButton.style("color", "white");
+  // *** CHANGE 1: Added transparent background styles ***
+  playButton.style("background-color", "transparent");
+  playButton.style("border", "2px solid white");
+  playButton.style("border-radius", "5px");
+  // *** END CHANGE 1 ***
+  playButton.size(60, 30);
+  centerButtonOnCanvas(playButton, 40);
+  playButton.mousePressed(() => {
+    playActionClick(); // Play click sound
+    scene = "prologue";   
+    playButton.hide(); 
+    currentMsg = 0;
+    displayText = "";
+    charIndex = 0;
+    lastUpdate = millis();
+  });
+
+  exitButton = createButton("exit the carousel");
+  // *** CHANGE 2: Added transparent background styles ***
+  exitButton.style("color", "white");
+  exitButton.style("background-color", "transparent");
+  exitButton.style("border", "2px solid white");
+  exitButton.style("border-radius", "5px");
+  // *** END CHANGE 2 ***
+  exitButton.size(140, 30);
+  centerButtonOnCanvas(exitButton, 40);
+  exitButton.hide(); 
+  exitButton.mousePressed(() => {
+    playActionClick(); // Play click sound
+    // reset ring state when entering ring-toss scene
+    ringAttached = false;
+    attachedHook = null;
+    transitioningToRingToss = true; // set flag to prevent immediate attachment
+    scene = "map";  // Changed to go back to map instead of scene2.0
+    exitButton.hide();
+    // Reset bloody scene flag when leaving
+    showBloodyScene = false;
+    // clear the transition flag after a short delay
+    setTimeout(() => {
+      transitioningToRingToss = false;
+    }, 100);
+  });
+
+  proceedButton = createButton("proceed to mission");
+  // *** CHANGE 3: Added transparent background styles ***
+  proceedButton.style("color", "white");
+  proceedButton.style("background-color", "transparent");
+  proceedButton.style("border", "2px solid white");
+  proceedButton.style("border-radius", "5px");
+  // *** END CHANGE 3 ***
+  proceedButton.size(180, 40);
+  centerButtonOnCanvas(proceedButton, 60);
+  proceedButton.hide(); 
+  proceedButton.mousePressed(() => {
+    playActionClick(); // Play click sound
+    scene = "map";  // Changed to go to map instead of scene1.1
+    proceedButton.hide();
+    currentMsg = 0;
+    displayText = "";
+    charIndex = 0;
+    lastUpdate = millis();
+    typingActive11 = false;
+    // Reset bloody scene flag when entering map
+    showBloodyScene = false;
+
+    transitioningToMap = true;
+    setTimeout(() => {
+      transitioningToMap = false;
+  }, 300); // 300ms should be enough
+});
+
+  memoryExitButton = createButton("return to map");
+  memoryExitButton.style("color", "white");
+  memoryExitButton.style("background-color", "transparent");
+  memoryExitButton.style("border", "2px solid white");
+  memoryExitButton.style("border-radius", "5px");
+  memoryExitButton.size(140, 30);
+  centerButtonOnCanvas(memoryExitButton, 60);
+  memoryExitButton.hide(); 
+  memoryExitButton.mousePressed(() => {
+  playActionClick(); // Play click sound
+  transitioningToMap = true;
+  scene= "map";
+  memoryExitButton.hide();
+  showMemorySequence = false;
+  memoryMusicStarted = false;
+  // Stop memory music and play map music (which stops all music)
+  if (ringtossMemory && ringtossMemory.isPlaying()) {
+    ringtossMemory.stop();
+  }
+  playSceneMusic("map");
+  setTimeout(() => { 
+    transitioningToMap = false;
+  }, 300);
+});
+  // NEW: inventory exit button (for inventory window)
+  inventoryExitButton = createButton("exit");
+  inventoryExitButton.style("color", "white");
+  inventoryExitButton.style("background-color", "transparent");
+  inventoryExitButton.style("border", "2px solid white");
+  inventoryExitButton.style("border-radius", "5px");
+  inventoryExitButton.size(100, 30);
+  inventoryExitButton.hide();
+  inventoryExitButton.mousePressed(() => {
+    playActionClick();
+    inventoryWindow = false;
+    inventoryExitButton.hide();
+  });
+
+  // Setup HTML controls - this is the key fix!
+  setupHTMLControls();
+
+  // Setup inventory box coordinates (top, left of other icons so it won't overlap)
+  // Icons are drawn at width-40 (settings) and width-80 (map). Place inventory left of map.
+  invSize = 44;
+  invX = width - 130; // safe margin to the left of map icon
+  invY = 10;
+
+  // Initial bunny position (off until available)
+  bunnyX = width / 2;
+  bunnyY = height * 0.65;
+}
+
+function createParticle() {
+  return {
+    x: random(width),
+    y: -10,
+    speed: random(3, 8),
+    width: random(1, 2),
+    height: random(15, 25),
+    opacity: random(150, 255),
+    drift: random(-0.2, 0.2)
+  };
+}
+
+function updateParticles() {
+  if (particles.length < maxParticles && random() < 0.3) {
+    particles.push(createParticle());
+  }
+  for (let i = particles.length - 1; i >= 0; i--) {
+    let p = particles[i];
+    p.y += p.speed;
+    p.x += p.drift;
+    fill(255, 255, 255, p.opacity);
+    noStroke();
+    ellipse(p.x, p.y, p.width, p.height);
+    if (p.y > height + 20) particles.splice(i, 1);
+  }
+}
+
+function playActionClick() {
+  if (actionclickSound && actionclickSound.isLoaded()) {
+    actionclickSound.play();
+  }
+}
+
+function setupHTMLControls() {
+  const vol = document.getElementById('vol');
+  const volVal = document.getElementById('volVal');
+  if (vol && volVal) {
+    const initialVol = parseFloat(vol.value);
+    if (homepageSound) homepageSound.setVolume(initialVol);
+    if (carnivalSound) carnivalSound.setVolume(initialVol);
+    if (ringtossMemory) ringtossMemory.setVolume(initialVol);
+    if (funhouseSound) funhouseSound.setVolume(initialVol);
+    if (actionclickSound) actionclickSound.setVolume(initialVol * 0.7);
+    volVal.textContent = initialVol.toFixed(2);
+    vol.addEventListener('input', () => {
+      const v = parseFloat(vol.value);
+      if (homepageSound) homepageSound.setVolume(v);
+      if (carnivalSound) carnivalSound.setVolume(v);
+      if (ringtossMemory) ringtossMemory.setVolume(v);
+      if (funhouseSound) funhouseSound.setVolume(v);
+      if (actionclickSound) actionclickSound.setVolume(v * 0.7);
+      volVal.textContent = v.toFixed(2);
+    });
+  }
+
+  const toggle = document.getElementById('toggle-sound');
+  if (toggle) {
+    toggle.addEventListener('click', () => {
+      playActionClick();
+      console.log("Sound button clicked, current scene:", scene);
+      if (scene === "scene1.1") {
+        if (carnivalSound && carnivalSound.isLoaded()) {
+          if (!carnivalSound.isPlaying()) {
+            if (homepageSound && homepageSound.isPlaying()) homepageSound.stop();
+            if (ringtossMemory && ringtossMemory.isPlaying()) ringtossMemory.stop();
+            if (funhouseSound && funhouseSound.isPlaying()) funhouseSound.stop();
+            carnivalSound.loop();
+          } else carnivalSound.stop();
+        } else {
+          setTimeout(() => {
+            if (carnivalSound && carnivalSound.isLoaded()) carnivalSound.loop();
+          }, 100);
+        }
+      } else if (scene === "scene2.0") {
+        if (ringtossMemory && ringtossMemory.isLoaded()) {
+          if (!ringtossMemory.isPlaying()) {
+            if (homepageSound && homepageSound.isPlaying()) homepageSound.stop();
+            if (carnivalSound && carnivalSound.isPlaying()) carnivalSound.stop();
+            if (funhouseSound && funhouseSound.isPlaying()) funhouseSound.stop();
+            ringtossMemory.loop();
+          } else ringtossMemory.stop();
+        } else {
+          setTimeout(() => {
+            if (ringtossMemory && ringtossMemory.isLoaded()) ringtossMemory.loop();
+          }, 100);
+        }
+      } else if (scene === "funhouse") {
+        if (funhouseSound && funhouseSound.isLoaded()) {
+          if (!funhouseSound.isPlaying()) {
+            if (homepageSound && homepageSound.isPlaying()) homepageSound.stop();
+            if (carnivalSound && carnivalSound.isPlaying()) carnivalSound.stop();
+            if (ringtossMemory && ringtossMemory.isPlaying()) ringtossMemory.stop();
+            funhouseSound.loop();
+          } else funhouseSound.stop();
+        } else {
+          setTimeout(() => {
+            if (funhouseSound && funhouseSound.isLoaded()) funhouseSound.loop();
+          }, 100);
+        }
+      } else if (scene === "start" || scene === "prologue") {
+        if (homepageSound && homepageSound.isLoaded()) {
+          if (!homepageSound.isPlaying()) {
+            if (carnivalSound && carnivalSound.isPlaying()) carnivalSound.stop();
+            if (ringtossMemory && ringtossMemory.isPlaying()) ringtossMemory.stop();
+            if (funhouseSound && funhouseSound.isPlaying()) funhouseSound.stop();
+            homepageSound.loop();
+          } else homepageSound.stop();
+        } else {
+          setTimeout(() => {
+            if (homepageSound && homepageSound.isLoaded()) homepageSound.loop();
+          }, 100);
+        }
+      } else {
+        if (homepageSound && homepageSound.isPlaying()) homepageSound.stop();
+      }
+    });
+  }
+}
 
 function draw() {
   if (scene === "start") {
@@ -234,18 +544,56 @@ function draw() {
     }
   } else if (scene === "map") {
     image(img5, 0, 0, width, height);
-    // ... rest of map code unchanged ...
+    let mouseInClickableArea = false;
+    for (let area of mapClickAreas) {
+      if (mouseX >= area.minX && mouseX <= area.maxX && 
+          mouseY >= area.minY && mouseY <= area.maxY) {
+        mouseInClickableArea = true;
+        if (fireflies.length < maxFireflies && random() < 0.3) {
+          fireflies.push({
+            x: random(area.minX, area.maxX),
+            y: random(area.minY, area.maxY),
+            life: 60,
+            size: random(3, 6),
+            glowSize: random(8, 15),
+            bobSpeed: random(0.02, 0.05),
+            bobOffset: random(0, TWO_PI)
+          });
+        }
+        break;
+      }
+    }
+    for (let i = fireflies.length - 1; i >= 0; i--) {
+      let fly = fireflies[i];
+      fly.life--;
+      fly.y += sin(millis() * fly.bobSpeed + fly.bobOffset) * 0.5;
+      fly.x += random(-0.5, 0.5);
+      push();
+      drawingContext.shadowColor = 'rgba(255, 255, 0, 0.8)';
+      drawingContext.shadowBlur = fly.glowSize;
+      fill(255, 255, 100, 200);
+      noStroke();
+      ellipse(fly.x, fly.y, fly.size);
+      pop();
+      fill(255, 255, 150);
+      noStroke();
+      ellipse(fly.x, fly.y, fly.size * 0.6);
+      if (fly.life <= 0) fireflies.splice(i, 1);
+    }
   } else if (scene === "funhouse") {
     image(img6, 0, 0, width, height);
   } else if (scene == "sewers") {
     image(img7, 0, 0, width, height);
   } else if (scene === "memory") {
     drawMemorySequence();
+   
     if (!memoryMusicStarted) {
         playSceneMusic("memory");
         memoryMusicStarted = true;
     }
+    // Check if memory music has finished playing
     if (ringtossMemory && !ringtossMemory.isPlaying() && memoryMusicStarted) {
+        // Show exit button when music finishes
         memoryExitButton.show();
     }
   } else if (scene === "scene1.1") {
@@ -286,94 +634,109 @@ function draw() {
     textSize(min(16, width * 0.03));
     textAlign(LEFT, TOP);
     text(displayText, bubbleX + pad, bubbleY + pad, bubbleW - 2 * pad, bubbleH - 2 * pad);
-  } else if (scene === "scene2.0") {
-    // BUNNY WIN/OVERLAY LOGIC and RINGTOSS scene
-    if ((ringWon && showBunnyOverlay && stuffedbunnyWon) || (bunnyAvailable && !bunnyInInventory)) {
-      push();
-      fill(0);
-      noStroke();
-      rectMode(CORNER);
-      rect(0, 0, width, height);
-      pop();
-    } else {
-      image(img2, 0, 0, width, height);
+
+
+
+else if (scene === "scene2.0") {
+  // If the bunny overlay or the draggable bunny is active, draw a black background instead of the ringtoss scene
+  if ((ringWon && showBunnyOverlay && stuffedbunnyWon) || (bunnyAvailable && !bunnyInInventory)) {
+    // Black out the whole canvas
+    push();
+    fill(0);
+    noStroke();
+    rectMode(CORNER);
+    rect(0, 0, width, height);
+    pop();
+  } else {
+    // Otherwise, draw the ring toss scene
+    image(img2, 0, 0, width, height);
+  }
+
+  // Draw the draggable bunny (on black background) if available
+  if (bunnyAvailable && !bunnyInInventory) {
+    push();
+    imageMode(CENTER);
+    bunnyX = width/2;
+    bunnyY = height/2;
+    if (stuffedBunny) {
+      image(stuffedBunny, bunnyX, bunnyY, 160, 160);
+    } else if (stuffedbunnyWon) {
+      image(stuffedbunnyWon, bunnyX, bunnyY, 160, 160);
     }
-    if (bunnyAvailable && !bunnyInInventory) {
+    imageMode(CORNER);
+    pop();
+  }
+
+  // Draw the bunny overlay (on black background) if it's time
+  if (ringWon) {
+    fill(255);
+    textAlign(CENTER, CENTER);
+    textSize(24);
+    text("You won!", width / 2, height / 2);
+
+    // Check if enough time has passed to show the bunny (3 seconds after win)
+    if (millis() - bunnyOverlayStartTime > 3000) {
+      showBunnyOverlay = true;
+    }
+
+    if (showBunnyOverlay && stuffedbunnyWon) {
       push();
       imageMode(CENTER);
-      bunnyX = width/2;
-      bunnyY = height/2;
-      if (stuffedBunny) {
-        image(stuffedBunny, bunnyX, bunnyY, 160, 160);
-      } else if (stuffedbunnyWon) {
-        image(stuffedbunnyWon, bunnyX, bunnyY, 160, 160);
-      }
-      imageMode(CORNER);
+      image(stuffedbunnyWon, width / 2, height / 2, 160, 160);
       pop();
     }
-    if (ringWon) {
-      fill(255);
+
+    // --- messages and bunny activation logic (unchanged) ---
+    if (showBunnyOverlay) {
+      let elapsed = millis() - (bunnyOverlayStartTime + 3000);
+      let msg1 = "you won the pink stuffed bunny!";
+      let msg2 = "put it in your inventory up top!";
+
+      push();
       textAlign(CENTER, CENTER);
-      textSize(24);
-      text("You won!", width / 2, height / 2);
-      if (millis() - bunnyOverlayStartTime > 3000) {
-        showBunnyOverlay = true;
+      textSize(18);
+      fill(255);
+      stroke(0);
+      strokeWeight(2);
+      rectMode(CENTER);
+      fill(0, 140);
+      noStroke();
+      rect(width / 2, height * 0.15, width * 0.9, 60, 8);
+      fill(255);
+      noStroke();
+      textFont("Source Code Pro");
+      if (elapsed >= 0) {
+        text(msg1, width / 2, height * 0.15);
       }
-      if (showBunnyOverlay && stuffedbunnyWon) {
-        push();
-        imageMode(CENTER);
-        image(stuffedbunnyWon, width / 2, height / 2, 160, 160);
-        pop();
-      }
-      if (showBunnyOverlay) {
-        let elapsed = millis() - (bunnyOverlayStartTime + 3000);
-        let msg1 = "you won the pink stuffed bunny!";
-        let msg2 = "put it in your inventory up top!";
-        push();
-        textAlign(CENTER, CENTER);
-        textSize(18);
-        fill(255);
-        stroke(0);
-        strokeWeight(2);
-        rectMode(CENTER);
-        fill(0, 140);
-        noStroke();
-        rect(width / 2, height * 0.15, width * 0.9, 60, 8);
-        fill(255);
-        noStroke();
-        textFont("Source Code Pro");
-        if (elapsed >= 0) {
-          text(msg1, width / 2, height * 0.15);
-        }
-        if (elapsed > 1500) {
-          textSize(16);
-          text(msg2, width / 2, height * 0.21);
-        }
-        pop();
-        if (elapsed > 2000 && !bunnyInInventory) {
-          bunnyAvailable = true;
-        }
-      }
-    }
-    if (!ringWon) {
-      push();
-      imageMode(CENTER);
-      if (ringAttached && attachedHook) {
-        image(img3, attachedHook.x, attachedHook.y, 100, 100);
-        if (!ringWon) {
-          setTimeout(() => {
-            ringWon = true;
-            bunnyOverlayStartTime = millis();
-          }, 500);
-        }
-      } else {
-        image(img3, mouseX, mouseY, 100, 100);
+      if (elapsed > 1500) {
+        textSize(16);
+        text(msg2, width / 2, height * 0.21);
       }
       pop();
+
+      if (elapsed > 2000 && !bunnyInInventory) {
+        bunnyAvailable = true;
+      }
     }
   }
 
-  // ... rest of UI drawing for icons, inventory etc. unchanged...
+  // If still playing the game, draw the ring
+  if (!ringWon) {
+    push();
+    imageMode(CENTER);
+    if (ringAttached && attachedHook) {
+      image(img3, attachedHook.x, attachedHook.y, 100, 100);
+      if (!ringWon) {
+        setTimeout(() => {
+          ringWon = true;
+          bunnyOverlayStartTime = millis();
+        }, 500);
+      }
+    } else {
+      image(img3, mouseX, mouseY, 100, 100);
+    }
+    pop();
+  }
 }
 
   // Draw UI icons (settings, map, inventory) - but not on start screen
@@ -401,6 +764,20 @@ function draw() {
     }
     pop();
   }
+
+ // If the bunny is available and not yet in inventory, draw it 
+if (bunnyAvailable && !bunnyInInventory) {
+  push();
+  imageMode(CENTER);
+  if (stuffedBunny) {
+    image(stuffedBunny, bunnyX, bunnyY, 60, 60); 
+  } else if (stuffedbunnyWon) {
+    image(stuffedbunnyWon, bunnyX, bunnyY, 60, 60);
+  }
+  imageMode(CORNER);
+  pop();
+}
+
 
   // If bunny is in inventory, show a small indicator on the inventory box (a dot or thumbnail)
   if (bunnyInInventory) {
