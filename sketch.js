@@ -392,8 +392,8 @@ function setup() {
 
   // Setup inventory box coordinates (top, left of other icons so it won't overlap)
   // Icons are drawn at width-40 (settings) and width-80 (map). Place inventory left of map.
-  invSize = 44;
-  invX = width - 130; // safe margin to the left of map icon
+  invSize = 30;
+  invX = width - 80 - invSize - 10; 
   invY = 10;
 
   // Initial bunny position (off until available)
@@ -1087,7 +1087,7 @@ function windowResized() {
 
   // Recompute inventory coordinates for new width
   invSize = 30;
-  invX = width - 120;
+  invX = width - 80 - invSize - 10;
   invY = 10;
 
   // re-center bunny
