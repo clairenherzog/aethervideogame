@@ -340,7 +340,7 @@ function setup() {
   proceedButton.style("border", "2px solid white");
   proceedButton.style("border-radius", "5px");
   // *** END CHANGE 3 ***
-  proceedButton.size(140, 30);
+  proceedButton.size(140, 50);
   centerButtonOnCanvas(proceedButton, 90);
   proceedButton.hide(); 
   proceedButton.mousePressed(() => {
