@@ -20,6 +20,7 @@ let mapIcon; // map icon for navigation
 let transitioningToMap = false;
 let scene = "start"; // keeps track of which screen to show
 let playButton;
+let currentAudio = null;
 let exitSewerButton;
 let homepageFont;
 let buttonFont;
