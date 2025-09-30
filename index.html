@@ -61,6 +61,21 @@
       // Example: call this after your text finishes loading
       // revealClickableBunny();
     </script>
+     <script>
+const btn = document.getElementById("play-stop-btn");
+const audio = document.getElementById("funhouse-audio");
+
+btn.addEventListener("click", () => {
+    if (audio.paused) {
+        audio.play();
+        btn.textContent = "Stop";
+    } else {
+        audio.pause();
+        audio.currentTime = 0;
+        btn.textContent = "Play";
+    }
+});
+   </script>
   </body>
 </html>
 
