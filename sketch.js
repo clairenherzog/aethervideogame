@@ -17,7 +17,6 @@ let playImg; // play button
 let continueImg; // continue button
 let proceedImg; // proceed to mission button
 let mapIcon; // map icon for navigation
-let transitioningToMap = false;
 let scene = "start"; // keeps track of which screen to show
 let playButton;
 let currentAudio = null;
@@ -25,17 +24,9 @@ let exitSewerButton;
 let homepageFont;
 let buttonFont;
 let stuffedbunnyWon;
-let gasMask;
-let memories;
 let stuffedBunny; // transparent bunny used for dragging (user said this variable exists)
 let showBunnyOverlay = false;
 let bunnyOverlayStartTime = 0;
-let showMemorySequence = false;
-let memorySequenceStartTime = 0;
-let memorySequenceDuration = 90000; // 4 seconds
-let ringtossMemory;
-let memoryExitButton; // exit button for memory scene
-let memoryMusicStarted = false; // track if memory music has started
 let messages1 = [
   "Agent ***,",
   "As a loyal subject to the Federal Bureau of Investigation,",
@@ -74,13 +65,11 @@ let lastUpdate = 0;
 let typingSpeed = 100;
 let exitButton;
 let proceedButton;
-let inventory; // inventory icon image
+let inventory; // inventory icon ilet sewerMusicStarted = false;emage
 let homepageSound;
 let carnivalSound;
 let actionclickSound;
 let funhouseSound;
-let funhouseMemory;
-let sewerSound;
 let canvas;
 let showBloodyScene = false; // Track whether to show bloody image
 let currentMusic = null;
@@ -175,8 +164,7 @@ function preload() {
   memories = loadImage("assets/memorygirl.png");
   gasMask = loadImage("assets/gasmask.png");
   stuffedbunnyWon = loadImage("assets/stuffedbunnywon.png");
-  // Transparent bunny sprite used for dragging (user said stuffedBunny already exists; re-load to be safe)
-  stuffedBunny = loadImage("assets/stuffedbunny.png");
+   
   playImg = loadImage("assets/playbutton.png");
   continueImg = loadImage("assets/continuebutton.png");
   proceedImg = loadImage("assets/proceedbutton.png");
@@ -207,68 +195,6 @@ function preload() {
     () => console.log("Funhouse sound loaded successfully"),
     () => console.log("Error loading funhouse sound")
   );
-  sewerSound = loadSound("assets/memory2.mp3",
-    () => console.log("Sewer sound loaded successfully"),
-    () => console.log("Error loading sewer sound")
-  );
-  funhouseMemory = loadSound("assets/memory3.mp3",
-    () => console.log("Funhouse memory sound loaded successfully"),
-    () => console.log("Error loading funhouse memory sound")
-  );                         
-}
-
-// Function to stop all music
-function stopAllMusic() {
-  if (homepageSound && homepageSound.isPlaying()) homepageSound.stop();
-  if (carnivalSound && carnivalSound.isPlaying()) carnivalSound.stop();
-  if (funhouseSound && funhouseSound.isPlaying()) funhouseSound.stop();
-  if (ringtossMemory && ringtossMemory.isPlaying()) ringtossMemory.stop();
-  if (sewerSound && sewerSound.isPlaying()) sewerSound.stop();
-  currentMusic = null;
-}
-
-// Function to play specific music for a scene
-function playSceneMusic(sceneName) {
-  // Don't restart the same music
-  if (currentMusic === sceneName) return;
-  
-  stopAllMusic();
-  
-  switch(sceneName) {
-    case "start":
-    case "prologue":
-      if (homepageSound && homepageSound.isLoaded()) {
-        homepageSound.loop();
-        currentMusic = sceneName;
-      }
-      break;
-    case "scene1.1":
-      if (carnivalSound && carnivalSound.isLoaded()) {
-        carnivalSound.loop();
-        currentMusic = sceneName;
-      }
-      break;
-    case "memory":
-      if (ringtossMemory && ringtossMemory.isLoaded()) {
-        ringtossMemory.play();
-        currentMusic = sceneName;
-      }
-      break;
-    case "funhouse":
-      if (funhouseSound && funhouseSound.isLoaded()) {
-        funhouseSound.loop();
-        currentMusic = sceneName;
-      }
-      break;
-    case "map":
-      break;
-    case "sewers":
-      if (sewerSound && sewerSound.isLoaded()) {
-        sewerSound.loop();
-        currentMusic = sceneName;
-      }
-      break;
-  }
 }
 
 function setup() {
@@ -291,11 +217,9 @@ function setup() {
    
   playButton = createButton("play");
   playButton.style("color", "white");
-  // *** CHANGE 1: Added transparent background styles ***
   playButton.style("background-color", "transparent");
   playButton.style("border", "2px solid white");
   playButton.style("border-radius", "5px");
-  // *** END CHANGE 1 ***
   playButton.size(60, 30);
   centerButtonOnCanvas(playButton, 40);
   playButton.mousePressed(() => {
@@ -309,14 +233,13 @@ function setup() {
   });
 
   exitButton = createButton("exit the carousel");
-  // *** CHANGE 2: Added transparent background styles ***
   exitButton.style("color", "white");
   exitButton.style("background-color", "transparent");
   exitButton.style("border", "2px solid white");
   exitButton.style("border-radius", "5px");
   // *** END CHANGE 2 ***
-  exitButton.size(190, 30);
-  centerButtonOnCanvas(exitButton, 70);
+  exitButton.size(140, 30);
+  centerButtonOnCanvas(exitButton, 40);
   exitButton.hide(); 
   exitButton.mousePressed(() => {
     playActionClick(); // Play click sound
@@ -335,14 +258,13 @@ function setup() {
   });
 
   proceedButton = createButton("proceed to mission");
-  // *** CHANGE 3: Added transparent background styles ***
   proceedButton.style("color", "white");
   proceedButton.style("background-color", "transparent");
   proceedButton.style("border", "2px solid white");
   proceedButton.style("border-radius", "5px");
   // *** END CHANGE 3 ***
-  proceedButton.size(140, 50);
-  centerButtonOnCanvas(proceedButton, 90);
+  proceedButton.size(180, 40);
+  centerButtonOnCanvas(proceedButton, 40);
   proceedButton.hide(); 
   proceedButton.mousePressed(() => {
     playActionClick(); // Play click sound
@@ -355,49 +277,6 @@ function setup() {
     typingActive11 = false;
     // Reset bloody scene flag when entering map
     showBloodyScene = false;
-
-    transitioningToMap = true;
-    setTimeout(() => {
-      transitioningToMap = false;
-    }, 300); // 300ms should be enough
-  });
-
-  memoryExitButton = createButton("exit memory");
-  memoryExitButton.style("color", "white");
-  memoryExitButton.style("background-color", "transparent");
-  memoryExitButton.style("border", "2px solid white");
-  memoryExitButton.style("border-radius", "5px");
-  memoryExitButton.size(140, 30);
-  centerButtonOnCanvas(memoryExitButton, 60);
-  memoryExitButton.hide(); 
-  memoryExitButton.mousePressed(() => {
-    playActionClick(); // Play click sound
-    transitioningToMap = true;
-    scene = "map";
-    memoryExitButton.hide();
-    showMemorySequence = false;
-    memoryMusicStarted = false;
-    // Stop memory music and play map music (which stops all music)
-    if (ringtossMemory && ringtossMemory.isPlaying()) {
-      ringtossMemory.stop();
-    }
-    playSceneMusic("map");
-    setTimeout(() => { 
-      transitioningToMap = false;
-    }, 300);
-  });
-    exitSewerButton = createButton("exit sewer");
-  exitSewerButton.style("color", "white");
-  exitSewerButton.style("background-color", "transparent");
-  exitSewerButton.style("border", "2px solid white");
-  exitSewerButton.style("border-radius", "5px");
-  exitSewerButton.size(120, 38);
-  exitSewerButton.hide();
-  exitSewerButton.mousePressed(() => {
-    playActionClick();
-    scene = "map";
-    exitSewerButton.hide();
-    if (sewerSound && sewerSound.isPlaying()) sewerSound.stop();
   });
 
   // NEW: inventory exit button (for inventory window)
@@ -480,7 +359,7 @@ function setupHTMLControls() {
     const initialVol = parseFloat(vol.value);
     if (homepageSound) homepageSound.setVolume(initialVol);
     if (carnivalSound) carnivalSound.setVolume(initialVol);
-    if (ringtossMemory) ringtossMemory.setVolume(initialVol);
+    if (ringtossSound) ringtossSound.setVolume(initialVol);
     if (funhouseSound) funhouseSound.setVolume(initialVol);
     if (actionclickSound) actionclickSound.setVolume(initialVol * 0.7);
     volVal.textContent = initialVol.toFixed(2);
@@ -488,7 +367,7 @@ function setupHTMLControls() {
       const v = parseFloat(vol.value);
       if (homepageSound) homepageSound.setVolume(v);
       if (carnivalSound) carnivalSound.setVolume(v);
-      if (ringtossMemory) ringtossMemory.setVolume(v);
+      if (ringtossSound) ringtossSound.setVolume(v);
       if (funhouseSound) funhouseSound.setVolume(v);
       if (actionclickSound) actionclickSound.setVolume(v * 0.7);
       volVal.textContent = v.toFixed(2);
@@ -504,7 +383,7 @@ function setupHTMLControls() {
         if (carnivalSound && carnivalSound.isLoaded()) {
           if (!carnivalSound.isPlaying()) {
             if (homepageSound && homepageSound.isPlaying()) homepageSound.stop();
-            if (ringtossMemory && ringtossMemory.isPlaying()) ringtossMemory.stop();
+            if (ringtossSound && ringtossSound.isPlaying()) ringtossSound.stop();
             if (funhouseSound && funhouseSound.isPlaying()) funhouseSound.stop();
             carnivalSound.loop();
           } else carnivalSound.stop();
@@ -514,17 +393,16 @@ function setupHTMLControls() {
           }, 100);
         }
       } else if (scene === "scene2.0") {
-        if (ringtossMemory && ringtossMemory.isLoaded()) {
-          if (!ringtossMemory.isPlaying()) {
+        if (ringtossSound && ringtossSound.isLoaded()) {
+          if (!ringtossSound.isPlaying()) {
             if (homepageSound && homepageSound.isPlaying()) homepageSound.stop();
             if (carnivalSound && carnivalSound.isPlaying()) carnivalSound.stop();
             if (funhouseSound && funhouseSound.isPlaying()) funhouseSound.stop();
-            if (sewerSound && sewerSound.isPlaying()) sewerSound.stop();
-            ringtossMemory.loop();
-          } else ringtossMemory.stop();
+            ringtossSound.loop();
+          } else ringtossSound.stop();
         } else {
           setTimeout(() => {
-            if (ringtossMemory && ringtossMemory.isLoaded()) ringtossMemory.loop();
+            if (ringtossSound && ringtossSound.isLoaded()) ringtossSound.loop();
           }, 100);
         }
       } else if (scene === "funhouse") {
@@ -532,8 +410,7 @@ function setupHTMLControls() {
           if (!funhouseSound.isPlaying()) {
             if (homepageSound && homepageSound.isPlaying()) homepageSound.stop();
             if (carnivalSound && carnivalSound.isPlaying()) carnivalSound.stop();
-            if (sewerSound && sewerSound.isPlaying()) sewerSound.stop();
-            if (ringtossMemory && ringtossMemory.isPlaying()) ringtossMemory.stop();
+            if (ringtossSound && ringtossSound.isPlaying()) ringtossSound.stop();
             funhouseSound.loop();
           } else funhouseSound.stop();
         } else {
@@ -541,28 +418,11 @@ function setupHTMLControls() {
             if (funhouseSound && funhouseSound.isLoaded()) funhouseSound.loop();
           }, 100);
         }
-      } else if (scene === "sewers") {
-        if (sewerSound && sewerSound.isLoaded()) {
-          if (!sewerSound.isPlaying()) {
-            if (homepageSound && homepageSound.isPlaying()) homepageSound.stop();
-            if (carnivalSound && carnivalSound.isPlaying()) carnivalSound.stop();
-            if (funhouseSound && funhouseSound.isPlaying()) funhouseSound.stop();
-            if (ringtossMemory && ringtossMemory.isPlaying()) ringtossMemory.stop();
-            sewerSound.loop();
-          } else {
-            sewerSound.stop();
-          }
-        } else {
-          setTimeout(() => {
-            if (sewerSound && sewerSound.isLoaded()) sewerSound.loop();
-          }, 100);
-        }
       } else if (scene === "start" || scene === "prologue") {
         if (homepageSound && homepageSound.isLoaded()) {
           if (!homepageSound.isPlaying()) {
             if (carnivalSound && carnivalSound.isPlaying()) carnivalSound.stop();
-            if (ringtossMemory && ringtossMemory.isPlaying()) ringtossMemory.stop();
-            if (sewerSound && sewerSound.isPlaying()) sewerSound.stop();
+            if (ringtossSound && ringtossSound.isPlaying()) ringtossSound.stop();
             if (funhouseSound && funhouseSound.isPlaying()) funhouseSound.stop();
             homepageSound.loop();
           } else homepageSound.stop();
@@ -579,6 +439,7 @@ function setupHTMLControls() {
 }
 
 function draw() {
+  
   if (scene === "start") {
     image(startImg, 0, 0, width, height);
     updateParticles();
@@ -648,54 +509,8 @@ function draw() {
     }
   } else if (scene === "funhouse") {
     image(img6, 0, 0, width, height);
-    if (!inventoryItems.includes("funhouse key")) {
-    imageMode(CENTER);
-    push();
-      translate(keyX, keyY);
-      rotate(radians(30));
-      image(funhouseKey, 0, 0, keyW, keyH); // set keyW/keyH to your size
-    pop();
-    imageMode(CORNER);
-    }
   } else if (scene == "sewers") {
     image(img7, 0, 0, width, height);
-    if (!inventoryItems.includes("gas mask")) {
-    imageMode(CENTER);
-    push();
-      translate(keyX, keyY);   // use same coordinates as funhouseKey
-      rotate(radians(30));     // same rotation for consistency
-      image(gasMask, 0, 0, keyW, keyH);
-    pop();
-    imageMode(CORNER);
-  }
-
-    
-    if (sewerSound && !sewerSound.isPlaying()) {
-      let canvasX = canvas.elt.getBoundingClientRect().left + window.scrollX;
-      let canvasY = canvas.elt.getBoundingClientRect().top + window.scrollY;
-      exitSewerButton.position(
-        canvasX + width / 2 - exitSewerButton.width / 2,
-        canvasY + height - 60
-    );
-     exitSewerButton.show();
-  } else {
-     exitSewerButton.hide();
-  }
-    
-}
-
-    else if (scene === "memory") {
-    drawMemorySequence();
-   
-    if (!memoryMusicStarted) {
-        playSceneMusic("memory");
-        memoryMusicStarted = true;
-    }
-    // Check if memory music has finished playing
-    if (ringtossMemory && !ringtossMemory.isPlaying() && memoryMusicStarted) {
-        // Show exit button when music finishes
-        memoryExitButton.show();
-    }
   } else if (scene === "scene1.1") {
     if (currentMsg > 6 || (currentMsg === 6 && charIndex === messages2[6].length)) {
       showBloodyScene = true;
@@ -763,12 +578,12 @@ function draw() {
       text("You won!", width / 2, height / 2);
       
       // Check if enough time has passed to show the bunny (3 seconds after win)
-      if (millis() - bunnyOverlayStartTime > 3000) {
+      if (millis() - bunnyOverlayStartTime > 3000 && !bunnyCollected) {
         showBunnyOverlay = true;
       }
       
       // Draw the bunny overlay if it's time
-      if (showBunnyOverlay && stuffedbunnyWon) {
+      if (showBunnyOverlay && stuffedbunnyWon && !bunnyCollected) {
         image(stuffedbunnyWon, 0, 0, width, height);
       }
 
@@ -777,7 +592,7 @@ function draw() {
         // elapsed since the overlay became visible
         let elapsed = millis() - (bunnyOverlayStartTime + 3000);
         let msg1 = "you won the pink stuffed bunny!";
-        let msg2 = "click on it to put it in your inventory up top!";
+        let msg2 = "put it in your inventory up top!";
 
         // show first message immediately after overlay; second after 1500ms
         push();
@@ -794,24 +609,16 @@ function draw() {
         fill(255);
         noStroke();
         textFont("Source Code Pro");
-        
-        if (elapsed >= 0) {
-          text(msg1, width / 2, height * 0.15);
-        }
-        if (elapsed > 1500) {
-          // draw second message below the first
-          textSize(16);
-          text(msg2, width / 2, height * 0.21);
-        }
+        text("You won the pink stuffed bunny!\nClick on it to place it in your inventory up top!", width / 2, height * 0.18);
         pop();
-
-        // After the second message has displayed for a short time, enable the draggable bunny
-        if (elapsed > 2000 && !bunnyInInventory) {
-          bunnyAvailable = true;
-        }
       }
     }
-  }
+
+    if (bunnyCollected) {
+      fill(0);
+      rect(0, 0, width, height);
+    }
+   }
 
   // Draw UI icons (settings, map, inventory) - but not on start screen
   if (scene !== "start") {
@@ -839,46 +646,21 @@ function draw() {
       imageMode(CORNER);
     }
     pop();
-
-    let mapBoxX = width - 80;
-    let mapBoxY = 10;
-    let mapBoxSize = 30;
-    let mapIconPadding = 0.8;
-    let mapIconSize = mapBoxSize * mapIconPadding;
-
-    push();
-    rectMode(CORNER);
-    stroke(255);
-    strokeWeight(1);
-    noFill();
-    rect(mapBoxX, mapBoxY, mapBoxSize, mapBoxSize, 6);
-    pop();
-
-    if (mapIcon) {
-      imageMode(CENTER);
-      image(
-        mapIcon,
-        mapBoxX + mapBoxSize / 2,
-        mapBoxY + mapBoxSize / 2,
-        mapIconSize,
-        mapIconSize
-      );
-      imageMode(CORNER);
-    }
   }
 
-  // If the bunny is available and not yet in inventory, draw it bigger
-  if (bunnyAvailable && !bunnyInInventory) {
-    push();
-    imageMode(CENTER);
-    if (stuffedBunny) {
-      image(stuffedBunny, bunnyX, bunnyY -75, 470, 470); // ⬅ bigger size here
-    } else if (stuffedbunnyWon) {
-      image(stuffedbunnyWon, bunnyX - 80, bunnyY - 80, 160, 160);
-    }
-    imageMode(CORNER);
-    pop();
+ // If the bunny is available and not yet in inventory, draw it bigger
+if (bunnyAvailable && !bunnyInInventory) {
+  push();
+  imageMode(CENTER);
+  if (stuffedBunny) {
+    image(stuffedBunny, bunnyX, bunnyY, 160, 160); // ⬅ bigger size here
+  } else if (stuffedbunnyWon) {
+    image(stuffedbunnyWon, bunnyX - 80, bunnyY - 80, 160, 160);
   }
+  imageMode(CORNER);
+  pop();
+}
+
 
   // If bunny is in inventory, show a small indicator on the inventory box (a dot or thumbnail)
   if (bunnyInInventory) {
@@ -899,20 +681,11 @@ function draw() {
     rect(0, 0, width, height);
     pop();
 
-    // ====== FIX: declare panel vars OUTSIDE push/pop so they are available after push/pop ======
+    // inventory panel
     let panelW = width * 0.8;
     let panelH = height * 0.75;
     let panelX = width * 0.1;
     let panelY = height * 0.12;
-    let cols = 1;
-    let rows = 3;
-    let padding = 18;
-    let slotSize = min(80, (panelW - padding * 2) / rows - 12);
-    let startX = panelX + padding;
-    let startY = panelY + 50;
-    // ====== END FIX ======
-
-    // inventory panel (start push)
     push();
     rectMode(CORNER);
     fill(20, 20, 30);
@@ -937,32 +710,14 @@ function draw() {
     }
 
     // If bunny is in inventory, draw it in first slot
-    if (bunnyInInventory && stuffedBunny) {
+    if (bunnyInInventory && stuffedbunnyWon) {
       imageMode(CORNER);
       let sx = startX;
       let sy = startY;
       // draw bunny image scaled to slot
-      image(stuffedBunny, sx + 6, sy + 6, slotSize - 12, slotSize - 12);
+      image(stuffedbunnyWon, sx + 6, sy + 6, slotSize - 12, slotSize - 12);
     }
-    pop(); // <-- The pop() is here, after all slot and bunny drawing
-
-    // Now draw the funhouse key (OUTSIDE push/pop)
-    if (inventoryItems.includes("funhouse key") && funhouseKey) {
-      let keySlot = bunnyInInventory ? 1 : 0;
-      let sx = startX + keySlot * (slotSize + 12);
-      let sy = startY;
-      image(funhouseKey, sx + 6, sy + 6, slotSize - 12, slotSize - 12);
-    }
-
-    // Draw gas mask in inventory if collected
-    if (inventoryItems.includes("gas mask") && gasMask) {
-      let maskSlot = 0;
-      if (inventoryItems.includes("pink stuffed bunny")) maskSlot++;
-      if (inventoryItems.includes("funhouse key")) maskSlot++;
-      let sx = startX + maskSlot * (slotSize + 12);
-      let sy = startY;
-      image(gasMask, sx + 6, sy + 6, slotSize - 12, slotSize - 12);
-    }
+    pop();
 
     // show inventory exit button and position it relative to panel
     inventoryExitButton.show();
@@ -1042,28 +797,63 @@ function keyPressed() {
 }
 
 function mousePressed() {
-  // Prevent interactions during short transitions
-  if (transitioningToRingToss) return;
-
-  // --- If bunny overlay is showing AND bunny available, check for clicking the bunny to add to inventory ---
-  if (scene === "scene2.0" && showBunnyOverlay && bunnyAvailable && !bunnyInInventory) {
-    // bunny is drawn at bunnyX, bunnyY (usually width/2, height/2)
-    let d = dist(mouseX, mouseY, bunnyX, bunnyY);
-    if (d < 80) { // Clicked bunny
-      bunnyInInventory = true;
-      bunnyAvailable = false;
-      if (!inventoryItems.includes("pink stuffed bunny")) {
+// --- If bunny overlay is showing AND bunny available, check for clicking the bunny to add to inventory ---
+ // --- If bunny overlay is showing AND bunny available, check for clicking the bunny to add to inventory ---
+ if (scene === "scene2.0" && showBunnyOverlay && bunnyAvailable && !bunnyInInventory) {
+  let minX = 140;  // Left edge of clickable area
+  let maxX = 307;  // Right edge of clickable area
+  let minY = 128;  // Top edge of clickable area
+  let maxY = 421;  // Bottom edge of clickable area
+  
+  if (mouseX >= minX && mouseX <= maxX && mouseY >= minY && mouseY <= maxY) {
+    bunnyInInventory = true;
+    bunnyAvailable = false;
+    showBunnyOverlay = false;
+    bunnyCollected = true;
+   if (!inventoryItems.includes("pink stuffed bunny")) {
         inventoryItems.push("pink stuffed bunny");
       }
       showMemorySequence = true;
       memorySequenceStartTime = millis();
       memoryMusicStarted = false;
-      playSceneMusic("memory");
+      ringtossMemoryEnded = false;
+      ringtossMemoryWasStoppedEarly = false; 
+
+      if (ringtossMemory && ringtossMemory.isLoaded()) {
+        ringtossMemory.play();
+        ringtossMemory.onended(() => {
+          if (!ringtossMemoryWasStoppedEarly) {
+            ringtossMemoryEnded = true;
+          }
+        });
+        memoryMusicStarted = true;
+      }
       setTimeout(() => {
         scene = "memory";
-      }, 100);
+      }, 500);
       playActionClick();
-      return; // Stop further processing!
+      return;
+    }
+  }
+
+if (transitioningToRingToss) return;
+
+  // --- PRIORITIZE inventory window interactions ---
+  if (inventoryWindow) {
+    // If inventory window is open, clicking inside should not trigger other scene clicks.
+    // We keep the inventoryExitButton to close it (handled by its mousePressed).
+    return;
+  }
+
+  // --- If bunny overlay is showing AND bunny available, check for grabbing the bunny first ---
+  if (scene === "scene2.0" && showBunnyOverlay && bunnyAvailable && !bunnyInInventory) {
+    // bunny drawn using imageMode(CENTER) at bunnyX,bunnyY with size 120
+    let d = dist(mouseX, mouseY, bunnyX, bunnyY);
+    if (d < 60) { // clicked bunny
+      bunnyDragging = true;
+      bunnyOffsetX = bunnyX - mouseX;
+      bunnyOffsetY = bunnyY - mouseY;
+      return; // don't process other clicks
     }
   }
 
@@ -1075,22 +865,7 @@ function mousePressed() {
       return;
     }
   }
-  if (scene === "funhouse" && !inventoryItems.includes("funhouse key")) {
-    let d = dist(mouseX, mouseY, keyX, keyY);
-    if (d < keyW / 2) { // assuming the key is roughly square/circular
-    inventoryItems.push("funhouse key");
-    playActionClick(); // optional: play your click sound
-    if (funhouseSound && funhouseSound.isPlaying()) {
-      funhouseSound.stop();
-    }
-      
-    if (funhouseMemory && funhouseMemory.isLoaded()) {
-      funhouseMemory.play();
-    }
-    return; // prevent further click handling
-  }
-}
-  
+
   // settings click
   if (mouseX > width - 40 && mouseX < width - 10 && mouseY > 10 && mouseY < 40) {
     playActionClick();
@@ -1125,7 +900,6 @@ function mousePressed() {
           mouseY >= area.minY && mouseY <= area.maxY) {
         playActionClick();
         scene = area.scene;
-        playSceneMusic(area.scene);
         fireflies = [];
         if (area.scene === "scene1.1") {
           typingActive11 = false;
@@ -1171,30 +945,43 @@ function mousePressed() {
     return;
   }
 
-  if (scene === "sewers" && !inventoryItems.includes("gas mask")) {
-  let d = dist(mouseX, mouseY, keyX, keyY);
-  if (d < keyW / 2) {
-    inventoryItems.push("gas mask");
-    playActionClick();
-    if (sewerSound && sewerSound.isLoaded()) {
-      sewerSound.stop();
-      sewerSound.play();
-    }
-    return;
-  }
-}
-
   // Dialogue advancement clicks (prologue/scene1.1)
+  console.log("Dialogue click in scene:", scene, "- no sound should play");
   handleAdvance();
 }
 
-function goToMap() {
-  scene = "map";
-  playSceneMusic("map");
-  mapClickable = false; // disable clicks temporarily
-  setTimeout(() => {
-    mapClickable = true; // re-enable clicks after 200ms
-  }, 200);
+function mouseDragged() {
+  // If dragging bunny, update its coords
+  if (bunnyDragging) {
+    bunnyX = mouseX + bunnyOffsetX;
+    bunnyY = mouseY + bunnyOffsetY;
+  }
+}
+
+function mouseReleased() {
+  // If we were dragging the bunny, check for drop into inventory rect
+  if (bunnyDragging) {
+    // Check if bunny center is inside inventory area
+    if (bunnyX >= invX && bunnyX <= invX + invSize && bunnyY >= invY && bunnyY <= invY + invSize) {
+      // Put bunny into inventory
+      bunnyInInventory = true;
+      bunnyAvailable = false;
+      bunnyDragging = false;
+      // add an identifier to inventory items
+      if (!inventoryItems.includes("pink stuffed bunny")) {
+        inventoryItems.push("pink stuffed bunny");
+      }
+      playActionClick();
+      return;
+    } else {
+      // release in world — bunny returns to default place
+      bunnyDragging = false;
+      // optional: snap back to a comfortable resting spot
+      bunnyX = width / 2;
+      bunnyY = height * 0.65;
+      return;
+    }
+  }
 }
 
 function centerButtonOnCanvas(btn, yOffset = 0) {
@@ -1232,6 +1019,80 @@ function windowResized() {
   // re-center bunny
   bunnyX = width / 2;
   bunnyY = height * 0.65;
+}
+
+function drawMemorySequence() {
+  background(0);
+  
+  // --- MUCH lighter glitch noise layer (only 200-500 particles instead of 20,050!) ---
+  let glitchCount = random(200, 500); // Vary the amount for more organic feel
+  for (let i = 0; i < glitchCount; i++) {
+    let x = random(width);
+    let y = random(height);
+    
+    // occasional horizontal glitch band
+    if (random(1) < 0.1) {
+      x = random(width);
+      y = int(random(height / 15)) * 15 + random(-2, 2);
+      // make horizontal bands wider
+      let bandWidth = random(10, width * 0.3);
+      let bandHeight = random(1, 3);
+      fill(255, random(100, 255));
+      noStroke();
+      rect(x, y, bandWidth, bandHeight);
+    } else {
+      // regular glitch pixels
+      let w = random(1, 3);
+      let h = random(1, 2);
+      fill(255, random(80, 255));
+      noStroke();
+      rect(x, y, w, h);
+    }
+  }
+  
+  // --- ellipse mask for "memories" image ---
+  if (memories) {
+    push();
+    
+    // Simple approach - draw a mask using p5.js native functions
+    // Create a graphics buffer for masking
+    let maskGraphics = createGraphics(width, height);
+    maskGraphics.fill(255);
+    maskGraphics.ellipse(width/2, height/2, 300, 400); // Adjust size as needed
+    
+    // Draw the image
+    push();
+    imageMode(CENTER);
+    image(memories, width/2, height/2, 300, 400);
+    pop();
+    
+    // Apply mask effect by drawing black around the ellipse
+    fill(0);
+    noStroke();
+    // Top rectangle
+    rect(0, 0, width, height/2 - 200);
+    // Bottom rectangle  
+    rect(0, height/2 + 200, width, height/2 - 200);
+    // Left rectangle
+    rect(0, height/2 - 200, width/2 - 150, 400);
+    // Right rectangle
+    rect(width/2 + 150, height/2 - 200, width/2 - 150, 400);
+    
+    // Draw ellipse border for cleaner edge
+    noFill();
+    stroke(100);
+    strokeWeight(2);
+    ellipse(width/2, height/2, 300, 400);
+    
+    pop();
+  }
+  
+  // --- subtle flickering overlay ---
+  if (random(1) < 0.3) { // Only flicker 30% of the time
+    fill(255, random(5, 25));
+    noStroke();
+    rect(0, 0, width, height);
+  }
 }
 
 function drawMemorySequence() {
