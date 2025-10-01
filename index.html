@@ -5,11 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>p5.js & Assets Demo</title>
     <link rel="stylesheet" href="styles.css" />
-
     <!-- p5.js core + p5.sound for audio -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.0/p5.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.0/addons/p5.sound.min.js"></script>
-
     <script src="sketch.js" defer></script>
   
     <style>
@@ -34,7 +32,6 @@
       }
     </style>
   </head>
-
   <body>
     <h1>aether</h1>
     <div id="sketch"></div>
@@ -47,21 +44,18 @@
         <span id="volVal">0.50</span>
       </label>
     </div>
-
     <script>
       // Function to swap glowing bunny → stuffed bunny
       function revealClickableBunny() {
         const bunnyWon = document.getElementById("stuffedbunnywon");
         const bunny = document.getElementById("stuffedbunny");
-
         bunnyWon.style.display = "none";
         bunny.style.display = "block";
       }
-
       // Example: call this after your text finishes loading
       // revealClickableBunny();
     </script>
   </body>
 </html>
-
+</html>
 
