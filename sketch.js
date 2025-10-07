@@ -8,6 +8,8 @@ let img4; // bloody carousel scene
 let img5; // map for game 
 let img6;   // funhouse scene 
 let img7;   // sewer scene 
+let memories; // memories image
+let gasMask; // gas mask image
 let funhouseKey;
 let keyX = 315; 
 let keyY = 440;
@@ -65,11 +67,12 @@ let lastUpdate = 0;
 let typingSpeed = 100;
 let exitButton;
 let proceedButton;
-let inventory; // inventory icon ilet sewerMusicStarted = false;emage
+let inventory; // inventory icon image
 let homepageSound;
 let carnivalSound;
 let actionclickSound;
 let funhouseSound;
+let ringtossSound; // Fixed: Added missing variable declaration
 let canvas;
 let showBloodyScene = false; // Track whether to show bloody image
 let currentMusic = null;
@@ -136,15 +139,29 @@ let ringAttached = false;
 let attachedHook = null;
 let ringWon = false; // tracks if player has won the ring toss game
 let transitioningToRingToss = false; // prevents immediate attachment
+let transitioningToMap = false; // Fixed: Added missing variable declaration
 
 // --- Inventory & Bunny drag state (NEW) ---
 let invX, invY, invSize; // inventory box at top (not overlapping icons)
 let bunnyAvailable = false; // becomes true after messages shown
 let bunnyInInventory = false;
+let bunnyCollected = false; // Fixed: Added missing variable declaration
 let inventoryItems = []; // list of strings / items placed in inventory
 let inventoryWindow = false; // shows full-screen inventory window
 let inventoryExitButton; // exit button for inventory window
 let bunnyX, bunnyY; // bunny position variables
+let bunnyDragging = false; // Fixed: Added missing variable for dragging state
+let bunnyOffsetX, bunnyOffsetY; // Fixed: Added missing offset variables
+let showMemorySequence = false; // Fixed: Added missing variable
+let memorySequenceStartTime = 0; // Fixed: Added missing variable
+let memoryMusicStarted = false; // Fixed: Added missing variable
+let ringtossMemory; // Fixed: Added missing variable for ringtoss memory sound
+let ringtossMemoryEnded = false; // Fixed: Added missing variable
+let ringtossMemoryWasStoppedEarly = false; // Fixed: Added missing variable
+let rows = 3; // Fixed: Added missing variable for inventory grid
+let startX = 30; // Fixed: Added missing variable for inventory positioning
+let startY = 50; // Fixed: Added missing variable for inventory positioning
+let slotSize = 80; // Fixed: Added missing variable for inventory slot size
 
 function isMobile() {
   return /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
@@ -183,9 +200,15 @@ function preload() {
     () => console.log("Carnival sound loaded successfully"),
     () => console.log("Error loading carnival sound")
   );
-  ringtossMemory = loadSound("assets/ringtossmemory.mp3",
+  // Fixed: Changed from ringtossMemory to ringtossSound for consistency
+  ringtossSound = loadSound("assets/ringtossmemory.mp3",
     () => console.log("Ring toss sound loaded successfully"),
     () => console.log("Error loading ring toss sound")
+  );
+  // Fixed: Also load ringtossMemory for memory sequence
+  ringtossMemory = loadSound("assets/ringtossmemory.mp3",
+    () => console.log("Ring toss memory sound loaded successfully"),
+    () => console.log("Error loading ring toss memory sound")
   );
   actionclickSound = loadSound("assets/actionclick.wav",
     () => console.log("Action click sound loaded successfully"),
@@ -237,7 +260,6 @@ function setup() {
   exitButton.style("background-color", "transparent");
   exitButton.style("border", "2px solid white");
   exitButton.style("border-radius", "5px");
-  // *** END CHANGE 2 ***
   exitButton.size(140, 30);
   centerButtonOnCanvas(exitButton, 40);
   exitButton.hide(); 
@@ -262,7 +284,6 @@ function setup() {
   proceedButton.style("background-color", "transparent");
   proceedButton.style("border", "2px solid white");
   proceedButton.style("border-radius", "5px");
-  // *** END CHANGE 3 ***
   proceedButton.size(180, 40);
   centerButtonOnCanvas(proceedButton, 40);
   proceedButton.hide(); 
@@ -511,6 +532,8 @@ function draw() {
     image(img6, 0, 0, width, height);
   } else if (scene == "sewers") {
     image(img7, 0, 0, width, height);
+  } else if (scene === "memory") { // Fixed: Added memory scene handling
+    drawMemorySequence();
   } else if (scene === "scene1.1") {
     if (currentMsg > 6 || (currentMsg === 6 && charIndex === messages2[6].length)) {
       showBloodyScene = true;
@@ -580,6 +603,7 @@ function draw() {
       // Check if enough time has passed to show the bunny (3 seconds after win)
       if (millis() - bunnyOverlayStartTime > 3000 && !bunnyCollected) {
         showBunnyOverlay = true;
+        bunnyAvailable = true; // Fixed: Set bunnyAvailable to true when overlay shows
       }
       
       // Draw the bunny overlay if it's time
@@ -661,7 +685,6 @@ if (bunnyAvailable && !bunnyInInventory) {
   pop();
 }
 
-
   // If bunny is in inventory, show a small indicator on the inventory box (a dot or thumbnail)
   if (bunnyInInventory) {
     push();
@@ -671,8 +694,6 @@ if (bunnyAvailable && !bunnyInInventory) {
     pop();
   }
 
-  // Inventory window (fullscreen modal-like) if opened
-   // Inventory window (fullscreen modal-like) if opened
   // Inventory window (fullscreen modal-like) if opened
   if (inventoryWindow) {
     // dark backdrop
@@ -798,7 +819,6 @@ function keyPressed() {
 
 function mousePressed() {
 // --- If bunny overlay is showing AND bunny available, check for clicking the bunny to add to inventory ---
- // --- If bunny overlay is showing AND bunny available, check for clicking the bunny to add to inventory ---
  if (scene === "scene2.0" && showBunnyOverlay && bunnyAvailable && !bunnyInInventory) {
   let minX = 140;  // Left edge of clickable area
   let maxX = 307;  // Right edge of clickable area
@@ -1019,80 +1039,6 @@ function windowResized() {
   // re-center bunny
   bunnyX = width / 2;
   bunnyY = height * 0.65;
-}
-
-function drawMemorySequence() {
-  background(0);
-  
-  // --- MUCH lighter glitch noise layer (only 200-500 particles instead of 20,050!) ---
-  let glitchCount = random(200, 500); // Vary the amount for more organic feel
-  for (let i = 0; i < glitchCount; i++) {
-    let x = random(width);
-    let y = random(height);
-    
-    // occasional horizontal glitch band
-    if (random(1) < 0.1) {
-      x = random(width);
-      y = int(random(height / 15)) * 15 + random(-2, 2);
-      // make horizontal bands wider
-      let bandWidth = random(10, width * 0.3);
-      let bandHeight = random(1, 3);
-      fill(255, random(100, 255));
-      noStroke();
-      rect(x, y, bandWidth, bandHeight);
-    } else {
-      // regular glitch pixels
-      let w = random(1, 3);
-      let h = random(1, 2);
-      fill(255, random(80, 255));
-      noStroke();
-      rect(x, y, w, h);
-    }
-  }
-  
-  // --- ellipse mask for "memories" image ---
-  if (memories) {
-    push();
-    
-    // Simple approach - draw a mask using p5.js native functions
-    // Create a graphics buffer for masking
-    let maskGraphics = createGraphics(width, height);
-    maskGraphics.fill(255);
-    maskGraphics.ellipse(width/2, height/2, 300, 400); // Adjust size as needed
-    
-    // Draw the image
-    push();
-    imageMode(CENTER);
-    image(memories, width/2, height/2, 300, 400);
-    pop();
-    
-    // Apply mask effect by drawing black around the ellipse
-    fill(0);
-    noStroke();
-    // Top rectangle
-    rect(0, 0, width, height/2 - 200);
-    // Bottom rectangle  
-    rect(0, height/2 + 200, width, height/2 - 200);
-    // Left rectangle
-    rect(0, height/2 - 200, width/2 - 150, 400);
-    // Right rectangle
-    rect(width/2 + 150, height/2 - 200, width/2 - 150, 400);
-    
-    // Draw ellipse border for cleaner edge
-    noFill();
-    stroke(100);
-    strokeWeight(2);
-    ellipse(width/2, height/2, 300, 400);
-    
-    pop();
-  }
-  
-  // --- subtle flickering overlay ---
-  if (random(1) < 0.3) { // Only flicker 30% of the time
-    fill(255, random(5, 25));
-    noStroke();
-    rect(0, 0, width, height);
-  }
 }
 
 function drawMemorySequence() {
