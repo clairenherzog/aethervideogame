@@ -1034,27 +1034,29 @@ if (aetherOverlay) {
 }
 
 
-  // Map box + icon (unchanged)
-  let mapBoxX = width - 80;
-  let mapBoxY = 10;
-  let mapBoxSize = 30;
-  let mapIconPadding = 0.8;
-  let mapIconSize = mapBoxSize * mapIconPadding;
+// Replace the existing map box + icon block (which currently hides the tiny map when scene === "map")
+// with this snippet so the small map thumbnail is always drawn in the top-right UI.
 
-  push();
-  rectMode(CORNER);
-  stroke(255);
-  strokeWeight(1);
-  noFill();
-  rect(mapBoxX, mapBoxY, mapBoxSize, mapBoxSize, 6);
-  pop();
+let mapBoxX = width - 80;
+let mapBoxY = 10;
+let mapBoxSize = 30;
+let mapIconPadding = 0.8;
+let mapIconSize = mapBoxSize * mapIconPadding;
 
-  if (scene !== "map" && mapIcon) {
-    imageMode(CENTER);
-    image(mapIcon, mapBoxX + mapBoxSize / 2, mapBoxY + mapBoxSize / 2, mapIconSize, mapIconSize);
-    imageMode(CORNER);
-  }
+push();
+rectMode(CORNER);
+stroke(255);
+strokeWeight(1);
+noFill();
+rect(mapBoxX, mapBoxY, mapBoxSize, mapBoxSize, 6);
+pop();
 
+// Always draw the tiny map icon inside the box (even when scene === "map")
+if (mapIcon) {
+  imageMode(CENTER);
+  image(mapIcon, mapBoxX + mapBoxSize / 2, mapBoxY + mapBoxSize / 2, mapIconSize, mapIconSize);
+  imageMode(CORNER);
+}
   // Inventory box (unchanged)
   push();
   rectMode(CORNER);
