@@ -1,5 +1,6 @@
 let startImg;
 let prologueImg;
+let settings; // settings button 
 let img1;   // carousel scene
 let img2;   // ring toss scene
 let img3;   // ring for mouse
@@ -9,7 +10,6 @@ let img6;   // funhouse scene
 let img7;   // sewer scene 
 let hintsIcon; // hints icon
 let infoIcon; // info icon
-let aboutBlurb; // aether about blurb
 let funhouseKey;
 let keyX = 315; 
 let keyY = 440;
@@ -186,7 +186,6 @@ function preload() {
   img7 = loadImage("assets/sewers.png");
   hintsIcon = loadImage("assets/hints.png");
   infoIcon = loadImage("assets/info.png");
-  aboutBlurb = loadImage("assets/aetherblurb.png");
   memories = loadImage("assets/memorygirl.png");
   gasMask = loadImage("assets/gasmask.png");
   stuffedbunnyWon = loadImage("assets/stuffedbunnywon.png");
@@ -194,6 +193,7 @@ function preload() {
   playImg = loadImage("assets/playbutton.png");
   continueImg = loadImage("assets/continuebutton.png");
   proceedImg = loadImage("assets/proceedbutton.png");
+  settings = loadImage("assets/settings.png");
   funhouseKey = loadImage("assets/funhousekey.png");
   inventory = loadImage("assets/inventory.svg"); 
   // You can use the same image for map icon or create a smaller version
@@ -449,6 +449,7 @@ function setup() {
   setupHTMLControls();
 
   // Setup inventory box coordinates (top, left of other icons so it won't overlap)
+  // Icons are drawn at width-40 (settings) and width-80 (map). Place inventory left of map.
   invSize = 30;
   invX = width - 80 - invSize - 10; 
   invY = 10;
@@ -975,25 +976,17 @@ if (showAdvanceHint11) {
    }
 
   // Draw UI icons (settings, map, inventory, hints) - but not on start screen
- 
-  
   if (scene !== "start") {
     // Draw hints icon at top-left (always visible)
     if (hintsIcon) {
       image(hintsIcon, 10, 10, 30, 30);
     }
+    if (settings) {
+      image(settings, width - 40, 10, 30, 30);
+    }
     if (scene !== "map" && mapIcon) {
       image(mapIcon, width - 80, 10, 30, 30);
     }
-     // Draw infoIcon only (no fallback to settings)
-    const infoX = width - 40;
-    const infoY = 10;
-    const infoW = 30;
-    const infoH = 30;
-    if (infoIcon) {
-    imageMode(CORNER);
-    image(infoIcon, infoX, infoY, infoW, infoH);
-  }
     // Draw the inventory box (top, left of map icon so it doesn't overlap)
     // Visual: small rounded rect with inventory image
     push();
@@ -1218,22 +1211,7 @@ function keyPressed() {
 }
 
 function mousePressed() {
-
-if (aboutBlurb) {
-    playActionClick();
-    aboutBlurb = false;
-    return;
-  }
-
-  // Info icon click (top-right) - open about overlay
-  // This replaces the previous settings click handler behavior
-  if (mouseX > width - 40 && mouseX < width - 10 && mouseY > 10 && mouseY < 40) {
-    playActionClick();
-    aboutBlurb = true;
-    return;
-  }
-  
-  // If the click falls on the hintsButton area (HTML button sits over the canvas), let it handle the click.
+// If the click falls on the hintsButton area (HTML button sits over the canvas), let it handle the click.
 if (hintsButton && hintsButton.elt && canvas && canvas.elt) {
   let btnBounds = hintsButton.elt.getBoundingClientRect();
   let canvasRect = canvas.elt.getBoundingClientRect();
@@ -1365,6 +1343,14 @@ if (scene === "sewers") {
     return; // prevent further click handling
   }
 }
+  
+  // settings click
+  if (mouseX > width - 40 && mouseX < width - 10 && mouseY > 10 && mouseY < 40) {
+    playActionClick();
+    scene = "settings"; 
+    return;
+  }
+  
   // map icon click (only show when not on map and not on start screen)
   if (scene !== "map" && scene !== "start" && 
       mouseX > width - 80 && mouseX < width - 50 && mouseY > 10 && mouseY < 40) {
