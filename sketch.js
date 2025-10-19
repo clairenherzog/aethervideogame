@@ -9,6 +9,7 @@ let img5; // map for game
 let img6;   // funhouse scene 
 let img7;   // sewer scene 
 let hintsIcon; // hints icon
+let infoIcon; // info icon
 let funhouseKey;
 let keyX = 315; 
 let keyY = 440;
