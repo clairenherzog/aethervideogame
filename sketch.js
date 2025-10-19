@@ -1219,9 +1219,9 @@ function keyPressed() {
 
 function mousePressed() {
 
-if (aboutWindow) {
+if (aboutBlurb) {
     playActionClick();
-    aboutWindow = false;
+    aboutBlurb = false;
     return;
   }
 
@@ -1229,7 +1229,7 @@ if (aboutWindow) {
   // This replaces the previous settings click handler behavior
   if (mouseX > width - 40 && mouseX < width - 10 && mouseY > 10 && mouseY < 40) {
     playActionClick();
-    aboutWindow = true;
+    aboutBlurb = true;
     return;
   }
   
