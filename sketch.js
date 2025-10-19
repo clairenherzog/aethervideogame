@@ -1213,7 +1213,22 @@ function keyPressed() {
 }
 
 function mousePressed() {
-// If the click falls on the hintsButton area (HTML button sits over the canvas), let it handle the click.
+
+if (aboutWindow) {
+    playActionClick();
+    aboutWindow = false;
+    return;
+  }
+
+  // Info icon click (top-right) - open about overlay
+  // This replaces the previous settings click handler behavior
+  if (mouseX > width - 40 && mouseX < width - 10 && mouseY > 10 && mouseY < 40) {
+    playActionClick();
+    aboutWindow = true;
+    return;
+  }
+  
+  // If the click falls on the hintsButton area (HTML button sits over the canvas), let it handle the click.
 if (hintsButton && hintsButton.elt && canvas && canvas.elt) {
   let btnBounds = hintsButton.elt.getBoundingClientRect();
   let canvasRect = canvas.elt.getBoundingClientRect();
