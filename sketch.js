@@ -1,7 +1,3 @@
-// Merged + fixed: aether_game_memory42.js
-// Notes: Funhouse audio is now only started after the funhouse key is collected and placed into inventory.
-// The HTML toggle (id="toggle-sound") will pause/resume the funhouse audio once it's started.
-
 let startImg;
 let prologueImg;
 let settings; // settings button 
@@ -742,6 +738,23 @@ function draw() {
         image(funhouseKey, 0, 0, keyW, keyH);
       pop();
       imageMode(CORNER);
+
+      // Instruction text to the left of the key (match ringtoss styling)
+      push();
+      textFont("Source Code Pro");
+      textSize(min(18, width * 0.045));
+      textAlign(RIGHT, CENTER);
+      textStyle(BOLD);
+      fill(250, 245, 230); // slightly translucent white used elsewhere
+      // subtle shadow to match ringtoss instruction appearance
+      drawingContext.shadowBlur = 8;
+      drawingContext.shadowColor = 'rgba(0,0,0,0.6)';
+      // Draw the text a bit to the left of the key image
+      text("[click key to enter memory]", keyX - keyW / 2 - 12, keyY);
+      // clear shadow and style
+      drawingContext.shadowBlur = 0;
+      textStyle(NORMAL);
+      pop();
     }  // ← This closes the if statement
   }    // ← This closes the funhouse scene
   else if (scene === "sewers") {
@@ -754,6 +767,20 @@ function draw() {
         image(gasMask, 0, 0, keyW, keyH);
       pop();
       imageMode(CORNER);
+
+      // Instruction text to the left of the gas mask (match ringtoss styling)
+      push();
+      textFont("Source Code Pro");
+      textSize(min(18, width * 0.045));
+      textAlign(RIGHT, CENTER);
+      textStyle(BOLD);
+      fill(250, 245, 230);
+      drawingContext.shadowBlur = 8;
+      drawingContext.shadowColor = 'rgba(0,0,0,0.6)';
+      text("[click mask to enter memory]", keyX - keyW / 2 - 12, keyY);
+      drawingContext.shadowBlur = 0;
+      textStyle(NORMAL);
+      pop();
     }
   
     // Only show exit button when music has finished playing
@@ -1420,7 +1447,6 @@ if (scene === "sewers") {
       }
     }
   }
-
 
   // Dialogue advancement clicks (prologue/scene1.1)
   handleAdvance();
