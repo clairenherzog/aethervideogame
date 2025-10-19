@@ -975,6 +975,8 @@ if (showAdvanceHint11) {
    }
 
   // Draw UI icons (settings, map, inventory, hints) - but not on start screen
+ 
+  
   if (scene !== "start") {
     // Draw hints icon at top-left (always visible)
     if (hintsIcon) {
@@ -983,6 +985,15 @@ if (showAdvanceHint11) {
     if (scene !== "map" && mapIcon) {
       image(mapIcon, width - 80, 10, 30, 30);
     }
+     // Draw infoIcon only (no fallback to settings)
+    const infoX = width - 40;
+    const infoY = 10;
+    const infoW = 30;
+    const infoH = 30;
+    if (infoIcon) {
+    imageMode(CORNER);
+    image(infoIcon, infoX, infoY, infoW, infoH);
+  }
     // Draw the inventory box (top, left of map icon so it doesn't overlap)
     // Visual: small rounded rect with inventory image
     push();
