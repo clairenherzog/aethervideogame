@@ -1,3 +1,7 @@
+// Merged + fixed: aether_game_memory42.js
+// Notes: Funhouse audio is now only started after the funhouse key is collected and placed into inventory.
+// The HTML toggle (id="toggle-sound") will pause/resume the funhouse audio once it's started.
+
 let startImg;
 let prologueImg;
 let settings; // settings button 
@@ -8,8 +12,7 @@ let img4; // bloody carousel scene
 let img5; // map for game 
 let img6;   // funhouse scene 
 let img7;   // sewer scene 
-let memories; // memories image
-let gasMask; // gas mask image
+let hintsIcon; // hints icon
 let funhouseKey;
 let keyX = 315; 
 let keyY = 440;
@@ -19,6 +22,7 @@ let playImg; // play button
 let continueImg; // continue button
 let proceedImg; // proceed to mission button
 let mapIcon; // map icon for navigation
+let transitioningToMap = false;
 let scene = "start"; // keeps track of which screen to show
 let playButton;
 let currentAudio = null;
@@ -26,9 +30,20 @@ let exitSewerButton;
 let homepageFont;
 let buttonFont;
 let stuffedbunnyWon;
-let stuffedBunny; // transparent bunny used for dragging (user said this variable exists)
+let bunnyCollected = false;
+let gasMask;
+let memories;
 let showBunnyOverlay = false;
 let bunnyOverlayStartTime = 0;
+let showMemorySequence = false;
+let memorySequenceStartTime = 0;
+let memorySequenceDuration = 90000; // 4 seconds
+let ringtossMemory;
+let ringtossMemoryEnded = false;
+let ringtossMemoryWasStoppedEarly = false;
+let showRingTossInstruction = false; 
+let memoryExitButton; // exit button for memory scene
+let memoryMusicStarted = false; // track if memory music has started
 let messages1 = [
   "Agent ***,",
   "As a loyal subject to the Federal Bureau of Investigation,",
@@ -67,12 +82,13 @@ let lastUpdate = 0;
 let typingSpeed = 100;
 let exitButton;
 let proceedButton;
-let inventory; // inventory icon image
+let inventory; // inventory icon ilet sewerMusicStarted = false;emage
 let homepageSound;
 let carnivalSound;
 let actionclickSound;
-let funhouseSound;
-let ringtossSound; // Fixed: Added missing variable declaration
+let funhouseMemory; // use funhouseMemory for playback
+let sewerSound;
+let sewerMusicStarted = false;
 let canvas;
 let showBloodyScene = false; // Track whether to show bloody image
 let currentMusic = null;
@@ -95,7 +111,7 @@ let mapClickAreas = [
     name: "ringtoss", 
     minX: 274, 
     maxX: 413, 
-    minY: 54, 
+    minY: 74, 
     maxY: 188, // adjust these coordinates for "play ringtoss" text
     scene: "scene2.0"
   },
@@ -139,29 +155,22 @@ let ringAttached = false;
 let attachedHook = null;
 let ringWon = false; // tracks if player has won the ring toss game
 let transitioningToRingToss = false; // prevents immediate attachment
-let transitioningToMap = false; // Fixed: Added missing variable declaration
 
 // --- Inventory & Bunny drag state (NEW) ---
 let invX, invY, invSize; // inventory box at top (not overlapping icons)
 let bunnyAvailable = false; // becomes true after messages shown
 let bunnyInInventory = false;
-let bunnyCollected = false; // Fixed: Added missing variable declaration
 let inventoryItems = []; // list of strings / items placed in inventory
 let inventoryWindow = false; // shows full-screen inventory window
 let inventoryExitButton; // exit button for inventory window
 let bunnyX, bunnyY; // bunny position variables
-let bunnyDragging = false; // Fixed: Added missing variable for dragging state
-let bunnyOffsetX, bunnyOffsetY; // Fixed: Added missing offset variables
-let showMemorySequence = false; // Fixed: Added missing variable
-let memorySequenceStartTime = 0; // Fixed: Added missing variable
-let memoryMusicStarted = false; // Fixed: Added missing variable
-let ringtossMemory; // Fixed: Added missing variable for ringtoss memory sound
-let ringtossMemoryEnded = false; // Fixed: Added missing variable
-let ringtossMemoryWasStoppedEarly = false; // Fixed: Added missing variable
-let rows = 3; // Fixed: Added missing variable for inventory grid
-let startX = 30; // Fixed: Added missing variable for inventory positioning
-let startY = 50; // Fixed: Added missing variable for inventory positioning
-let slotSize = 80; // Fixed: Added missing variable for inventory slot size
+
+// --- NEW: hints UI ---
+let hintsButton;       // HTML button positioned over the drawn hintsIcon
+let hintsWindow = false; // whether the hints overlay is visible
+
+// --- NEW: advance hint for scene1.1 ---
+let showAdvanceHint11 = false; // controls "[press space bar or click mouse to continue]" inside the scene1.1 bubble
 
 function isMobile() {
   return /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
@@ -178,6 +187,7 @@ function preload() {
   img5 = loadImage("assets/map.png");
   img6 = loadImage("assets/funhouse.png");
   img7 = loadImage("assets/sewers.png");
+  hintsIcon = loadImage("assets/hints.png");
   memories = loadImage("assets/memorygirl.png");
   gasMask = loadImage("assets/gasmask.png");
   stuffedbunnyWon = loadImage("assets/stuffedbunnywon.png");
@@ -200,24 +210,89 @@ function preload() {
     () => console.log("Carnival sound loaded successfully"),
     () => console.log("Error loading carnival sound")
   );
-  // Fixed: Changed from ringtossMemory to ringtossSound for consistency
-  ringtossSound = loadSound("assets/ringtossmemory.mp3",
+  ringtossMemory = loadSound("assets/ringtossmemory.mp3",
     () => console.log("Ring toss sound loaded successfully"),
     () => console.log("Error loading ring toss sound")
-  );
-  // Fixed: Also load ringtossMemory for memory sequence
-  ringtossMemory = loadSound("assets/ringtossmemory.mp3",
-    () => console.log("Ring toss memory sound loaded successfully"),
-    () => console.log("Error loading ring toss memory sound")
   );
   actionclickSound = loadSound("assets/actionclick.wav",
     () => console.log("Action click sound loaded successfully"),
     () => console.log("Error loading action click sound")
   );
-  funhouseSound = loadSound("assets/funhouse.mp3", 
-    () => console.log("Funhouse sound loaded successfully"),
-    () => console.log("Error loading funhouse sound")
+  sewerSound = loadSound("assets/memory2.mp3",
+    () => console.log("Sewer sound loaded successfully"),
+    () => console.log("Error loading sewer sound")
   );
+  funhouseMemory = loadSound("assets/memory3.mp3",
+    () => console.log("Funhouse memory sound loaded successfully"),
+    () => console.log("Error loading funhouse memory")
+  );                         
+}
+
+// Function to stop all music
+function stopAllMusic() {
+  if (homepageSound && homepageSound.isPlaying()) homepageSound.stop();
+  if (carnivalSound && carnivalSound.isPlaying()) carnivalSound.stop();
+  if (ringtossMemory && ringtossMemory.isPlaying()) ringtossMemory.stop();
+  if (sewerSound && sewerSound.isPlaying()) sewerSound.stop();
+  if (funhouseMemory && funhouseMemory.isPlaying()) funhouseMemory.stop();
+  currentMusic = null;
+}
+
+// Function to play specific music for a scene
+function playSceneMusic(sceneName) {
+  // Don't restart the same music
+  if (currentMusic === sceneName) return;
+  
+  stopAllMusic();
+  
+  switch(sceneName) {
+    case "start":
+    case "prologue":
+      if (homepageSound && homepageSound.isLoaded()) {
+        homepageSound.loop();
+        currentMusic = sceneName;
+      }
+      break;
+    case "scene1.1":
+      if (carnivalSound && carnivalSound.isLoaded()) {
+        carnivalSound.loop();
+        currentMusic = sceneName;
+      }
+      break;
+    case "scene2.0":
+      if (ringtossMemory && ringtossMemory.isLoaded()) {
+        ringtossMemory.loop();
+        currentMusic = sceneName;
+      }
+      break;
+    case "memory":
+      if (ringtossMemory && ringtossMemory.isLoaded()) {
+        ringtossMemory.play();
+        currentMusic = sceneName;
+      }
+      break;
+    case "funhouse":
+      // Only start funhouse audio if the player already has collected the key
+      if (inventoryItems.includes("funhouse key")) {
+        if (funhouseMemory && funhouseMemory.isLoaded()) {
+          funhouseMemory.loop();
+          currentMusic = sceneName;
+        }
+      } else {
+        // do not auto-play funhouse audio if the key is not collected
+        currentMusic = null;
+      }
+      break;
+    case "map":
+      break;
+    case "sewers":
+        // Only allow music control if gas mask has been collected
+        if (inventoryItems.includes("gas mask") && sewerSound && sewerSound.isLoaded()) {
+          sewerSound.loop();
+          currentMusic = sceneName;
+        }
+        break;
+  }
 }
 
 function setup() {
@@ -260,8 +335,8 @@ function setup() {
   exitButton.style("background-color", "transparent");
   exitButton.style("border", "2px solid white");
   exitButton.style("border-radius", "5px");
-  exitButton.size(140, 30);
-  centerButtonOnCanvas(exitButton, 40);
+  exitButton.size(190, 30);
+  centerButtonOnCanvas(exitButton, 125);
   exitButton.hide(); 
   exitButton.mousePressed(() => {
     playActionClick(); // Play click sound
@@ -284,8 +359,8 @@ function setup() {
   proceedButton.style("background-color", "transparent");
   proceedButton.style("border", "2px solid white");
   proceedButton.style("border-radius", "5px");
-  proceedButton.size(180, 40);
-  centerButtonOnCanvas(proceedButton, 40);
+  proceedButton.size(140, 50);
+  centerButtonOnCanvas(proceedButton, 90);
   proceedButton.hide(); 
   proceedButton.mousePressed(() => {
     playActionClick(); // Play click sound
@@ -298,6 +373,51 @@ function setup() {
     typingActive11 = false;
     // Reset bloody scene flag when entering map
     showBloodyScene = false;
+
+    transitioningToMap = true;
+    setTimeout(() => {
+      transitioningToMap = false;
+    }, 300); // 300ms should be enough
+  });
+
+  memoryExitButton = createButton("exit memory");
+  memoryExitButton.style("color", "white");
+  memoryExitButton.style("background-color", "transparent");
+  memoryExitButton.style("border", "2px solid white");
+  memoryExitButton.style("border-radius", "5px");
+  memoryExitButton.size(140, 30);
+  centerButtonOnCanvas(memoryExitButton, 40);
+  memoryExitButton.hide(); 
+  memoryExitButton.mousePressed(() => {
+    playActionClick(); // Play click sound
+    transitioningToMap = true;
+    scene = "map";
+    memoryExitButton.hide();
+    showMemorySequence = false;
+    memoryMusicStarted = false;
+    // Stop memory music and play map music (which stops all music)
+    if (ringtossMemory && ringtossMemory.isPlaying()) {
+      ringtossMemory.stop();
+    }
+    playSceneMusic("map");
+    setTimeout(() => { 
+      transitioningToMap = false;
+    }, 300);
+  });
+  exitSewerButton = createButton("exit sewer");
+  exitSewerButton.style("color", "white");
+  exitSewerButton.style("background-color", "transparent");
+  exitSewerButton.style("border", "2px solid white");
+  exitSewerButton.style("border-radius", "5px");
+  exitSewerButton.size(120, 38);
+  exitSewerButton.hide();
+  exitSewerButton.mousePressed(() => {
+    playActionClick();
+    exitSewerButton.hide();
+    sewerMusicStarted = false; // Reset flag
+    if (sewerSound && sewerSound.isPlaying()) sewerSound.stop();
+    scene = "map";
+    playSceneMusic("map");
   });
 
   // NEW: inventory exit button (for inventory window)
@@ -314,6 +434,19 @@ function setup() {
     inventoryExitButton.hide();
   });
 
+  // NEW: Hints button - an invisible HTML button that sits over the drawn hintsIcon
+  hintsButton = createButton(''); // no label; icon will be drawn by p5 in draw()
+  hintsButton.style('background', 'transparent');
+  hintsButton.style('border', 'none');
+  // size approximately same as other top icons (30x30)
+  hintsButton.size(34, 34);
+  // Position will be set via positionHintsButton()
+  hintsButton.mousePressed(() => {
+    playActionClick();
+    // toggle hints overlay
+    hintsWindow = !hintsWindow;
+  });
+
   // Setup HTML controls - this is the key fix!
   setupHTMLControls();
 
@@ -326,6 +459,17 @@ function setup() {
   // Initial bunny position (off until available)
   bunnyX = width / 2;
   bunnyY = height * 0.65;
+
+  // Position the hints button once initially
+  positionHintsButton();
+}
+
+function positionHintsButton() {
+  if (!hintsButton || !hintsButton.elt || !canvas || !canvas.elt) return;
+  const canvasX = canvas.elt.getBoundingClientRect().left + window.scrollX;
+  const canvasY = canvas.elt.getBoundingClientRect().top + window.scrollY;
+  // Place at left edge with same Y as other top icons (10)
+  hintsButton.position(canvasX + 10, canvasY + 10);
 }
 
 function createParticle() {
@@ -380,16 +524,18 @@ function setupHTMLControls() {
     const initialVol = parseFloat(vol.value);
     if (homepageSound) homepageSound.setVolume(initialVol);
     if (carnivalSound) carnivalSound.setVolume(initialVol);
-    if (ringtossSound) ringtossSound.setVolume(initialVol);
-    if (funhouseSound) funhouseSound.setVolume(initialVol);
+    if (ringtossMemory) ringtossMemory.setVolume(initialVol);
+    if (funhouseMemory) funhouseMemory.setVolume(initialVol);
+    if (sewerSound) sewerSound.setVolume(initialVol);
     if (actionclickSound) actionclickSound.setVolume(initialVol * 0.7);
     volVal.textContent = initialVol.toFixed(2);
     vol.addEventListener('input', () => {
       const v = parseFloat(vol.value);
       if (homepageSound) homepageSound.setVolume(v);
       if (carnivalSound) carnivalSound.setVolume(v);
-      if (ringtossSound) ringtossSound.setVolume(v);
-      if (funhouseSound) funhouseSound.setVolume(v);
+      if (ringtossMemory) ringtossMemory.setVolume(v);
+      if (funhouseMemory) funhouseMemory.setVolume(v);
+      if (sewerSound) sewerSound.setVolume(v);
       if (actionclickSound) actionclickSound.setVolume(v * 0.7);
       volVal.textContent = v.toFixed(2);
     });
@@ -399,68 +545,114 @@ function setupHTMLControls() {
   if (toggle) {
     toggle.addEventListener('click', () => {
       playActionClick();
-      console.log("Sound button clicked, current scene:", scene);
-      if (scene === "scene1.1") {
-        if (carnivalSound && carnivalSound.isLoaded()) {
-          if (!carnivalSound.isPlaying()) {
-            if (homepageSound && homepageSound.isPlaying()) homepageSound.stop();
-            if (ringtossSound && ringtossSound.isPlaying()) ringtossSound.stop();
-            if (funhouseSound && funhouseSound.isPlaying()) funhouseSound.stop();
-            carnivalSound.loop();
-          } else carnivalSound.stop();
-        } else {
-          setTimeout(() => {
-            if (carnivalSound && carnivalSound.isLoaded()) carnivalSound.loop();
-          }, 100);
+
+      // Prefer toggling the sound corresponding to currentMusic (the most recently started scene audio)
+      // If none found, fall back to selecting by current scene.
+      let sceneSound = null;
+
+      if (currentMusic) {
+        switch (currentMusic) {
+          case "start":
+          case "prologue":
+            sceneSound = homepageSound;
+            break;
+          case "scene1.1":
+            sceneSound = carnivalSound;
+            break;
+          case "scene2.0":
+          case "memory":
+            sceneSound = ringtossMemory;
+            break;
+          case "funhouse":
+            // use the funhouseMemory audio for funhouse
+            sceneSound = funhouseMemory;
+            break;
+          case "sewers":
+            if (inventoryItems.includes("gas mask")) sceneSound = sewerSound;
+            break;
         }
-      } else if (scene === "scene2.0") {
-        if (ringtossSound && ringtossSound.isLoaded()) {
-          if (!ringtossSound.isPlaying()) {
-            if (homepageSound && homepageSound.isPlaying()) homepageSound.stop();
-            if (carnivalSound && carnivalSound.isPlaying()) carnivalSound.stop();
-            if (funhouseSound && funhouseSound.isPlaying()) funhouseSound.stop();
-            ringtossSound.loop();
-          } else ringtossSound.stop();
-        } else {
-          setTimeout(() => {
-            if (ringtossSound && ringtossSound.isLoaded()) ringtossSound.loop();
-          }, 100);
+      }
+
+      // Fallback to scene-based sound selection if currentMusic mapping not available
+      if (!sceneSound) {
+        if (scene === "start" || scene === "prologue") {
+          sceneSound = homepageSound;
+        } else if (scene === "scene1.1") {
+          sceneSound = carnivalSound;
+        } else if (scene === "scene2.0" || scene === "memory") {
+          sceneSound = ringtossMemory;
+        } else if (scene === "funhouse") {
+          // use funhouseMemory when toggling from funhouse
+          sceneSound = funhouseMemory;
+        } else if (scene === "sewers") {
+          if (inventoryItems.includes("gas mask")) {
+            sceneSound = sewerSound;
+          }
         }
-      } else if (scene === "funhouse") {
-        if (funhouseSound && funhouseSound.isLoaded()) {
-          if (!funhouseSound.isPlaying()) {
-            if (homepageSound && homepageSound.isPlaying()) homepageSound.stop();
-            if (carnivalSound && carnivalSound.isPlaying()) carnivalSound.stop();
-            if (ringtossSound && ringtossSound.isPlaying()) ringtossSound.stop();
-            funhouseSound.loop();
-          } else funhouseSound.stop();
+      }
+
+      // If we have a sound for this selection, toggle it
+      if (sceneSound && sceneSound.isLoaded && sceneSound.isLoaded()) {
+        if (sceneSound.isPlaying && sceneSound.isPlaying()) {
+          sceneSound.stop();
+          // Special-case memory track behavior
+          if (currentMusic === "memory" || scene === "memory") {
+            ringtossMemoryEnded = false; // User stopped audio, do NOT show exit button
+            ringtossMemoryWasStoppedEarly = true;
+          }
+          // If we just stopped the funhouse audio, clear currentMusic if it matched
+          if (currentMusic === "funhouse") currentMusic = null;
         } else {
-          setTimeout(() => {
-            if (funhouseSound && funhouseSound.isLoaded()) funhouseSound.loop();
-          }, 100);
+          // Stop all other sounds first
+          stopAllMusic();
+          if (currentMusic === "memory" || scene === "memory") {
+            ringtossMemoryEnded = false; // Reset before playing
+            ringtossMemoryWasStoppedEarly = false;
+            sceneSound.play();
+            sceneSound.onended(() => {
+              if (!ringtossMemoryWasStoppedEarly) {
+                ringtossMemoryEnded = true; // Only show exit button if natural end!
+              }
+            });
+            currentMusic = "memory";
+          } else {
+            sceneSound.loop();
+            // set currentMusic to the mapped name if we can infer it
+            if (scene === "scene1.1") currentMusic = "scene1.1";
+            else if (scene === "scene2.0") currentMusic = "scene2.0";
+            else if (scene === "start" || scene === "prologue") currentMusic = "prologue";
+            else if (scene === "funhouse") currentMusic = "funhouse";
+            else if (scene === "sewers") currentMusic = "sewers";
+          }
         }
-      } else if (scene === "start" || scene === "prologue") {
-        if (homepageSound && homepageSound.isLoaded()) {
-          if (!homepageSound.isPlaying()) {
-            if (carnivalSound && carnivalSound.isPlaying()) carnivalSound.stop();
-            if (ringtossSound && ringtossSound.isPlaying()) ringtossSound.stop();
-            if (funhouseSound && funhouseSound.isPlaying()) funhouseSound.stop();
-            homepageSound.loop();
-          } else homepageSound.stop();
-        } else {
-          setTimeout(() => {
-            if (homepageSound && homepageSound.isLoaded()) homepageSound.loop();
-          }, 100);
-        }
+      } else if (sceneSound && sceneSound.isLoaded && !sceneSound.isLoaded()) {
+        // If sound isn't loaded yet, try again after delay
+        setTimeout(() => {
+          if (sceneSound.isLoaded && sceneSound.isLoaded()) {
+            stopAllMusic();
+            if (currentMusic === "memory" || scene === "memory") {
+              sceneSound.play();
+              currentMusic = "memory";
+            } else {
+              sceneSound.loop();
+              // set currentMusic to something sensible
+              if (scene === "scene1.1") currentMusic = "scene1.1";
+            }
+          }
+        }, 100);
       } else {
-        if (homepageSound && homepageSound.isPlaying()) homepageSound.stop();
+        // Fall back: if no sceneSound could be determined, attempt to stop any playing
+        // (useful if currentMusic is null but audio is playing)
+        stopAllMusic();
       }
     });
   }
 }
 
 function draw() {
-  
+  // Always ensure hints button is positioned over the drawn icon (in case canvas moved)
+  positionHintsButton();
+
   if (scene === "start") {
     image(startImg, 0, 0, width, height);
     updateParticles();
@@ -487,6 +679,18 @@ function draw() {
       text(messages1[i], width / 2, yStart + i * lineHeight);
     }
     text(displayText, width/2, yStart + currentMsg * lineHeight);
+
+    // --- Instruction shown under first line in prologue (already present) ---
+    if (currentMsg === 0) {
+  push();
+  textFont("Source Code Pro");
+  textSize(min(12, width * 0.03));
+  fill(200); // subtle gray
+  textAlign(CENTER, TOP);
+  text("[press space or click mouse to continue]", width / 2, yStart + lineHeight + 6);
+  pop();
+}
+
     if (currentMsg === messages1.length - 1 && charIndex === messages1[currentMsg].length) {
       proceedButton.show();
     }
@@ -530,10 +734,51 @@ function draw() {
     }
   } else if (scene === "funhouse") {
     image(img6, 0, 0, width, height);
-  } else if (scene == "sewers") {
+    if (!inventoryItems.includes("funhouse key")) {
+      imageMode(CENTER);
+      push();
+        translate(keyX, keyY);
+        rotate(radians(30));
+        image(funhouseKey, 0, 0, keyW, keyH);
+      pop();
+      imageMode(CORNER);
+    }  // ← This closes the if statement
+  }    // ← This closes the funhouse scene
+  else if (scene === "sewers") {
     image(img7, 0, 0, width, height);
-  } else if (scene === "memory") { // Fixed: Added memory scene handling
+    if (!inventoryItems.includes("gas mask")) {
+      imageMode(CENTER);
+      push();
+        translate(keyX, keyY);
+        rotate(radians(30));
+        image(gasMask, 0, 0, keyW, keyH);
+      pop();
+      imageMode(CORNER);
+    }
+  
+    // Only show exit button when music has finished playing
+    if (sewerMusicStarted && sewerSound && !sewerSound.isPlaying()) {
+      let canvasX = canvas.elt.getBoundingClientRect().left + window.scrollX;
+      let canvasY = canvas.elt.getBoundingClientRect().top + window.scrollY;
+      exitSewerButton.position(
+        canvasX + width / 2 - exitSewerButton.width / 2,
+        canvasY + height - 160
+      );
+      exitSewerButton.show();
+    } else {
+      exitSewerButton.hide();
+    }
+  }
+
+    else if (scene === "memory") {
     drawMemorySequence();
+
+    if (ringtossMemoryEnded && !ringtossMemoryWasStoppedEarly) {
+      memoryExitButton.show();
+    } else {
+      memoryExitButton.hide();
+    }
+  
   } else if (scene === "scene1.1") {
     if (currentMsg > 6 || (currentMsg === 6 && charIndex === messages2[6].length)) {
       showBloodyScene = true;
@@ -572,9 +817,73 @@ function draw() {
     textSize(min(16, width * 0.03));
     textAlign(LEFT, TOP);
     text(displayText, bubbleX + pad, bubbleY + pad, bubbleW - 2 * pad, bubbleH - 2 * pad);
+if (showAdvanceHint11) {
+  // Compute padded box near the bottom of the speech bubble
+  const hintPad = 8; // smaller padding so we have more room
+  const hintBoxW = bubbleW - hintPad * 2;
+  const hintBoxH = bubbleH * 0.28; // allow up to ~28% of bubble height
+  const hintBoxX = bubbleX + hintPad;
+  const hintBoxY = bubbleY + bubbleH - hintPad - hintBoxH - 20;
+
+  const hintText = "[press space or click mouse to continue]";
+
+  // Start with a reasonable font size and shrink until it fits
+  textFont("Source Code Pro");
+  let fontSize = Math.min(14, Math.floor(hintBoxW * 0.08)); // start size (cap at 14)
+  if (fontSize < 10) fontSize = 10; // never too small
+  textAlign(CENTER, TOP);
+
+  // Helper to compute approximate wrapped text height for given fontSize
+  function wrappedHeightForSize(size, txt, boxW) {
+    textSize(size);
+    const ascent = textAscent();
+    const descent = textDescent();
+    const lineHeight = ascent + descent;
+    const rawWidth = textWidth(txt);
+    const lines = Math.max(1, Math.ceil(rawWidth / boxW));
+    return lines * lineHeight;
+  }
+
+  // Reduce font size until the wrapped height fits in hintBoxH (or reach min size)
+  while (fontSize > 8) {
+    const h = wrappedHeightForSize(fontSize, hintText, hintBoxW);
+    if (h <= hintBoxH) break;
+    fontSize--;
+  }
+
+  // Draw the text centered in the hint box by using the box's left as x
+  push();
+  noStroke();
+  fill(120); // subtle gray
+  textSize(fontSize);
+  // use left edge (hintBoxX) — text will center inside the box thanks to textAlign(CENTER)
+  textAlign(CENTER, TOP);
+  text(hintText, hintBoxX, hintBoxY, hintBoxW, hintBoxH);
+  pop();
+}
+
   } else if (scene === "scene2.0") {
     // ring toss scene
     image(img2, 0, 0, width, height);
+
+   if (showRingTossInstruction) {
+  push();
+  textFont("Source Code Pro");
+  textSize(min(18, width * 0.045)); // responsive size; tweak as desired
+  textAlign(CENTER, CENTER);
+  textStyle(BOLD);
+  fill(250, 245, 230); // slightly translucent white
+  noStroke();
+  // Optional subtle shadow:
+  drawingContext.shadowBlur = 8;
+  drawingContext.shadowColor = 'rgba(0,0,0,0.6)';
+
+  text("[click on one of the hooks to play]", width / 2, height / 2 + 11);
+
+  // clear shadow so it doesn't affect other drawings
+  drawingContext.shadowBlur = 0;
+  pop();
+}
 
     if (!ringWon) {
       push();
@@ -603,25 +912,17 @@ function draw() {
       // Check if enough time has passed to show the bunny (3 seconds after win)
       if (millis() - bunnyOverlayStartTime > 3000 && !bunnyCollected) {
         showBunnyOverlay = true;
-        bunnyAvailable = true; // Fixed: Set bunnyAvailable to true when overlay shows
       }
       
       // Draw the bunny overlay if it's time
       if (showBunnyOverlay && stuffedbunnyWon && !bunnyCollected) {
         image(stuffedbunnyWon, 0, 0, width, height);
-      }
-
-      // --- NEW: handle the sequential messages and make bunny clickable after ---
-      if (showBunnyOverlay) {
-        // elapsed since the overlay became visible
-        let elapsed = millis() - (bunnyOverlayStartTime + 3000);
-        let msg1 = "you won the pink stuffed bunny!";
-        let msg2 = "put it in your inventory up top!";
-
-        // show first message immediately after overlay; second after 1500ms
+        bunnyAvailable = true;
+        
+        // show message
         push();
         textAlign(CENTER, CENTER);
-        textSize(18);
+        textSize(15);
         fill(255);
         stroke(0);
         strokeWeight(2);
@@ -633,8 +934,9 @@ function draw() {
         fill(255);
         noStroke();
         textFont("Source Code Pro");
-        text("You won the pink stuffed bunny!\nClick on it to place it in your inventory up top!", width / 2, height * 0.18);
+        text("You won the pink stuffed bunny!\nClick on it to place it in\nyour inventory up top!", width / 2, height * 0.18);
         pop();
+    
       }
     }
 
@@ -644,8 +946,12 @@ function draw() {
     }
    }
 
-  // Draw UI icons (settings, map, inventory) - but not on start screen
+  // Draw UI icons (settings, map, inventory, hints) - but not on start screen
   if (scene !== "start") {
+    // Draw hints icon at top-left (always visible)
+    if (hintsIcon) {
+      image(hintsIcon, 10, 10, 30, 30);
+    }
     if (settings) {
       image(settings, width - 40, 10, 30, 30);
     }
@@ -670,20 +976,33 @@ function draw() {
       imageMode(CORNER);
     }
     pop();
-  }
 
- // If the bunny is available and not yet in inventory, draw it bigger
-if (bunnyAvailable && !bunnyInInventory) {
-  push();
-  imageMode(CENTER);
-  if (stuffedBunny) {
-    image(stuffedBunny, bunnyX, bunnyY, 160, 160); // ⬅ bigger size here
-  } else if (stuffedbunnyWon) {
-    image(stuffedbunnyWon, bunnyX - 80, bunnyY - 80, 160, 160);
+    let mapBoxX = width - 80;
+    let mapBoxY = 10;
+    let mapBoxSize = 30;
+    let mapIconPadding = 0.8;
+    let mapIconSize = mapBoxSize * mapIconPadding;
+
+    push();
+    rectMode(CORNER);
+    stroke(255);
+    strokeWeight(1);
+    noFill();
+    rect(mapBoxX, mapBoxY, mapBoxSize, mapBoxSize, 6);
+    pop();
+
+    if (mapIcon) {
+      imageMode(CENTER);
+      image(
+        mapIcon,
+        mapBoxX + mapBoxSize / 2,
+        mapBoxY + mapBoxSize / 2,
+        mapIconSize,
+        mapIconSize
+      );
+      imageMode(CORNER);
+    }
   }
-  imageMode(CORNER);
-  pop();
-}
 
   // If bunny is in inventory, show a small indicator on the inventory box (a dot or thumbnail)
   if (bunnyInInventory) {
@@ -702,11 +1021,18 @@ if (bunnyAvailable && !bunnyInInventory) {
     rect(0, 0, width, height);
     pop();
 
-    // inventory panel
     let panelW = width * 0.8;
     let panelH = height * 0.75;
     let panelX = width * 0.1;
     let panelY = height * 0.12;
+    let cols = 1;
+    let rows = 3;
+    let padding = 18;
+    let slotSize = min(80, (panelW - padding * 2) / rows - 12);
+    let startX = panelX + padding;
+    let startY = panelY + 50;
+
+    // inventory panel (start push)
     push();
     rectMode(CORNER);
     fill(20, 20, 30);
@@ -740,17 +1066,50 @@ if (bunnyAvailable && !bunnyInInventory) {
     }
     pop();
 
+    // Now draw the funhouse key (OUTSIDE push/pop)
+    if (inventoryItems.includes("funhouse key") && funhouseKey) {
+      let keySlot = bunnyInInventory ? 1 : 0;
+      let sx = startX;
+      let sy = startY + keySlot * (slotSize + 12);
+      image(funhouseKey, sx + 6, sy + 6, slotSize - 12, slotSize - 12);
+    }
+
+    // Draw gas mask in inventory if collected
+    if (inventoryItems.includes("gas mask") && gasMask) {
+      let maskSlot = 0;
+      if (bunnyInInventory) maskSlot++;
+      if (inventoryItems.includes("funhouse key")) maskSlot++;
+      let sx = startX;
+      let sy = startY + maskSlot * (slotSize + 12);
+      image(gasMask, sx + 6, sy + 6, slotSize - 12, slotSize - 12);
+    }
+
     // show inventory exit button and position it relative to panel
     inventoryExitButton.show();
     // compute position for the inventoryExitButton so it sits top-right of the panel
     let canvasX = canvas.elt.getBoundingClientRect().left + window.scrollX;
     let canvasY = canvas.elt.getBoundingClientRect().top + window.scrollY;
-    let btnX = canvasX + panelX + panelW - inventoryExitButton.width - 16;
+    let btnX = canvasX + panelX + panelW / 2 - inventoryExitButton.width / 2;
     let btnY = canvasY + panelY + 12;
     inventoryExitButton.position(btnX, btnY);
   } else {
     // hide inventory exit button if window not open
     inventoryExitButton.hide();
+  }
+
+  // Hints overlay (drawn on top of everything when toggled)
+  if (hintsWindow) {
+    push();
+    fill(0, 220);
+    rect(0, 0, width, height);
+    fill(255);
+    noStroke();
+    textFont("Source Code Pro");
+    textAlign(CENTER, TOP);
+    textSize(16);
+    // Example hint text – customize as desired
+    text("Hints:\n• Click objects highlighted in each scene to interact.\n• Use the map icon (top-right) to navigate.\n• Collect items to use later.", width/2, 60, width * 0.8);
+    pop();
   }
 }
 
@@ -785,6 +1144,11 @@ function advanceMessage() {
 }
 
 function handleAdvance() {
+  // Hide the scene1.1 hint as soon as the user advances (space or click)
+  if (scene === "scene1.1") {
+    showAdvanceHint11 = false;
+  }
+
   if (scene === "scene1.1") {
     if (!typingActive11) {
       typingActive11 = true;
@@ -818,6 +1182,22 @@ function keyPressed() {
 }
 
 function mousePressed() {
+// If the click falls on the hintsButton area (HTML button sits over the canvas), let it handle the click.
+if (hintsButton && hintsButton.elt && canvas && canvas.elt) {
+  let btnBounds = hintsButton.elt.getBoundingClientRect();
+  let canvasRect = canvas.elt.getBoundingClientRect();
+  let relativeMouseX = mouseX + canvasRect.left;
+  let relativeMouseY = mouseY + canvasRect.top + window.scrollY;
+  if (
+    relativeMouseX >= btnBounds.left && relativeMouseX <= btnBounds.right &&
+    relativeMouseY >= btnBounds.top && relativeMouseY <= btnBounds.bottom
+  ) {
+    // The HTML button's own mousePressed handles toggling the hintsWindow,
+    // so we simply return to avoid duplicate canvas handling.
+    return;
+  }
+}
+
 // --- If bunny overlay is showing AND bunny available, check for clicking the bunny to add to inventory ---
  if (scene === "scene2.0" && showBunnyOverlay && bunnyAvailable && !bunnyInInventory) {
   let minX = 140;  // Left edge of clickable area
@@ -858,24 +1238,59 @@ function mousePressed() {
 
 if (transitioningToRingToss) return;
 
-  // --- PRIORITIZE inventory window interactions ---
-  if (inventoryWindow) {
-    // If inventory window is open, clicking inside should not trigger other scene clicks.
-    // We keep the inventoryExitButton to close it (handled by its mousePressed).
+  // Sewer scene: prioritize exit button click
+if (scene === "sewers") {
+  // Only show exit button if music is finished
+  let buttonIsShowing = (sewerMusicStarted && sewerSound && !sewerSound.isPlaying());
+
+  if (buttonIsShowing) {
+    // Get exit button bounds
+    let btnBounds = exitSewerButton.elt.getBoundingClientRect();
+    let canvasRect = canvas.elt.getBoundingClientRect();
+    let relativeMouseX = mouseX + canvasRect.left;
+    let relativeMouseY = mouseY + canvasRect.top + window.scrollY;
+
+    // If mouse is inside button, let the button handle it and return immediately
+    if (relativeMouseX >= btnBounds.left && relativeMouseX <= btnBounds.right &&
+        relativeMouseY >= btnBounds.top && relativeMouseY <= btnBounds.bottom) {
+      // Do NOT process gas mask pickup!
+      return;
+    }
+    // If button is showing and click wasn't on the button, ignore all other logic.
     return;
   }
-
-  // --- If bunny overlay is showing AND bunny available, check for grabbing the bunny first ---
-  if (scene === "scene2.0" && showBunnyOverlay && bunnyAvailable && !bunnyInInventory) {
-    // bunny drawn using imageMode(CENTER) at bunnyX,bunnyY with size 120
-    let d = dist(mouseX, mouseY, bunnyX, bunnyY);
-    if (d < 60) { // clicked bunny
-      bunnyDragging = true;
-      bunnyOffsetX = bunnyX - mouseX;
-      bunnyOffsetY = bunnyY - mouseY;
-      return; // don't process other clicks
+  
+  // Only process gas mask pickup if button is NOT showing
+  if (!inventoryItems.includes("gas mask")) {
+    let d = dist(mouseX, mouseY, keyX, keyY);
+    if (d < keyW / 2) {
+      inventoryItems.push("gas mask");
+      playActionClick();
+      if (sewerSound && sewerSound.isLoaded()) {
+        sewerSound.play(); // Play once
+        sewerMusicStarted = true;
+      }
+      return;
     }
   }
+  // If button is NOT showing, allow picking up the mask
+  if (!inventoryItems.includes("gas mask")) {
+    let d = dist(mouseX, mouseY, keyX, keyY);
+    if (d < keyW / 2) {
+      inventoryItems.push("gas mask");
+      playActionClick();
+      // Start playing the sewer music for the first time
+      if (sewerSound && sewerSound.isLoaded()) {
+        sewerSound.play(); // Play once, not loop
+        sewerMusicStarted = true;
+      }
+      return;
+    }
+  }
+}
+  
+  // Prevent interactions during short transitions
+  if (transitioningToRingToss) return;
 
   // --- Inventory icon click (open inventory window) ---
   if (scene !== "start") {
@@ -885,7 +1300,21 @@ if (transitioningToRingToss) return;
       return;
     }
   }
-
+  if (scene === "funhouse" && !inventoryItems.includes("funhouse key")) {
+    let d = dist(mouseX, mouseY, keyX, keyY);
+    if (d < keyW / 2) { // assuming the key is roughly square/circular
+    // collect the funhouse key, place into inventory, and start funhouse audio now that key is in inventory
+    inventoryItems.push("funhouse key");
+    playActionClick();
+    // Start funhouse audio only after key is collected
+    if (funhouseMemory && funhouseMemory.isLoaded()) {
+      // Use the centralized helper to start scene audio so currentMusic is set consistently
+      playSceneMusic("funhouse");
+    }
+    return; // prevent further click handling
+  }
+}
+  
   // settings click
   if (mouseX > width - 40 && mouseX < width - 10 && mouseY > 10 && mouseY < 40) {
     playActionClick();
@@ -920,6 +1349,10 @@ if (transitioningToRingToss) return;
           mouseY >= area.minY && mouseY <= area.maxY) {
         playActionClick();
         scene = area.scene;
+        // Only play audio immediately for other scenes, NOT ringtoss
+        if (area.scene !== "scene2.0") {
+          playSceneMusic(area.scene);
+        }
         fireflies = [];
         if (area.scene === "scene1.1") {
           typingActive11 = false;
@@ -927,6 +1360,8 @@ if (transitioningToRingToss) return;
           displayText = "";
           charIndex = 0;
           showBloodyScene = false;
+          // show the advance hint when entering scene1.1
+          showAdvanceHint11 = true;
         } else if (area.scene === "scene2.0") {
           ringAttached = false;
           attachedHook = null;
@@ -934,6 +1369,7 @@ if (transitioningToRingToss) return;
           showBunnyOverlay = false;
           bunnyOverlayStartTime = 0;
           transitioningToRingToss = true;
+          showRingTossInstruction = true;
           setTimeout(() => {
             transitioningToRingToss = false;
           }, 100);
@@ -958,6 +1394,7 @@ if (transitioningToRingToss) return;
     if (clickedHook) {
       ringAttached = true;
       attachedHook = clickedHook;
+      showRingTossInstruction = false;
     } else {
       ringAttached = false;
       attachedHook = null;
@@ -965,43 +1402,37 @@ if (transitioningToRingToss) return;
     return;
   }
 
+  if (scene === "sewers" && !inventoryItems.includes("gas mask")) {
+    // Only process gas mask clicks if the exit button is NOT currently showing
+    let buttonIsShowing = (sewerMusicStarted && sewerSound && !sewerSound.isPlaying());
+    
+    if (!buttonIsShowing) {
+      let d = dist(mouseX, mouseY, keyX, keyY);
+      if (d < keyW / 2) {
+        inventoryItems.push("gas mask");
+        playActionClick();
+        // Start playing the sewer music for the first time
+        if (sewerSound && sewerSound.isLoaded()) {
+          sewerSound.play(); // Play once, not loop
+          sewerMusicStarted = true;
+        }
+        return;
+      }
+    }
+  }
+
+
   // Dialogue advancement clicks (prologue/scene1.1)
-  console.log("Dialogue click in scene:", scene, "- no sound should play");
   handleAdvance();
 }
 
-function mouseDragged() {
-  // If dragging bunny, update its coords
-  if (bunnyDragging) {
-    bunnyX = mouseX + bunnyOffsetX;
-    bunnyY = mouseY + bunnyOffsetY;
-  }
-}
-
-function mouseReleased() {
-  // If we were dragging the bunny, check for drop into inventory rect
-  if (bunnyDragging) {
-    // Check if bunny center is inside inventory area
-    if (bunnyX >= invX && bunnyX <= invX + invSize && bunnyY >= invY && bunnyY <= invY + invSize) {
-      // Put bunny into inventory
-      bunnyInInventory = true;
-      bunnyAvailable = false;
-      bunnyDragging = false;
-      // add an identifier to inventory items
-      if (!inventoryItems.includes("pink stuffed bunny")) {
-        inventoryItems.push("pink stuffed bunny");
-      }
-      playActionClick();
-      return;
-    } else {
-      // release in world — bunny returns to default place
-      bunnyDragging = false;
-      // optional: snap back to a comfortable resting spot
-      bunnyX = width / 2;
-      bunnyY = height * 0.65;
-      return;
-    }
-  }
+function goToMap() {
+  scene = "map";
+  playSceneMusic("map");
+  mapClickable = false; // disable clicks temporarily
+  setTimeout(() => {
+    mapClickable = true; // re-enable clicks after 200ms
+  }, 200);
 }
 
 function centerButtonOnCanvas(btn, yOffset = 0) {
@@ -1039,6 +1470,9 @@ function windowResized() {
   // re-center bunny
   bunnyX = width / 2;
   bunnyY = height * 0.65;
+
+  // reposition hints button after resizing
+  positionHintsButton();
 }
 
 function drawMemorySequence() {
