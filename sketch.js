@@ -11,6 +11,7 @@ let img7;   // sewer scene
 let hintsIcon; // hints icon
 let infoIcon; // info icon
 let aetherBlurb; // about page
+let aetherOverlay = false; // when true show full-screen aetherBlurb image
 let funhouseKey;
 let keyX = 315; 
 let keyY = 440;
@@ -195,7 +196,7 @@ function preload() {
   playImg = loadImage("assets/playbutton.png");
   continueImg = loadImage("assets/continuebutton.png");
   proceedImg = loadImage("assets/proceedbutton.png");
-  settings = loadImage("assets/settings.png");
+  // settings image load removed — we will use infoIcon instead, no fallback to settings
   funhouseKey = loadImage("assets/funhousekey.png");
   inventory = loadImage("assets/inventory.svg"); 
   // You can use the same image for map icon or create a smaller version
@@ -746,21 +747,22 @@ function draw() {
       // Instruction text to the left of the key (match ringtoss styling)
       push();
       textFont("Source Code Pro");
-      textSize(min(18, width * 0.045));
-      textAlign(RIGHT, CENTER);
+      textSize(min(18, width * 0.035));
+      textAlign(CENTER, CENTER);
       textStyle(BOLD);
       fill(250, 245, 230); // slightly translucent white used elsewhere
       // subtle shadow to match ringtoss instruction appearance
       drawingContext.shadowBlur = 8;
       drawingContext.shadowColor = 'rgba(0,0,0,0.6)';
       // Draw the text a bit to the left of the key image
-      text("[click key to enter memory]", keyX - keyW / 2 - 12, keyY);
+      text("[click key to \n enter memory]", keyX - keyW / 2 - 12, keyY);
       // clear shadow and style
       drawingContext.shadowBlur = 0;
       textStyle(NORMAL);
       pop();
     }  // ← This closes the if statement
   }    // ← This closes the funhouse scene
+
   else if (scene === "sewers") {
     image(img7, 0, 0, width, height);
     if (!inventoryItems.includes("gas mask")) {
@@ -775,13 +777,13 @@ function draw() {
       // Instruction text to the left of the gas mask (match ringtoss styling)
       push();
       textFont("Source Code Pro");
-      textSize(min(18, width * 0.045));
-      textAlign(RIGHT, CENTER);
+      textSize(min(18, width * 0.035));
+      textAlign(CENTER - 20, CENTER);
       textStyle(BOLD);
       fill(250, 245, 230);
       drawingContext.shadowBlur = 8;
       drawingContext.shadowColor = 'rgba(0,0,0,0.6)';
-      text("[click mask to enter memory]", keyX - keyW / 2 - 12, keyY);
+      text("[click mask to \n enter memory]", keyX - keyW / 2 - 12, keyY);
       drawingContext.shadowBlur = 0;
       textStyle(NORMAL);
       pop();
@@ -977,63 +979,98 @@ if (showAdvanceHint11) {
     }
    }
 
-  // Draw UI icons (settings, map, inventory, hints) - but not on start screen
-  if (scene !== "start") {
-    // Draw hints icon at top-left (always visible)
-    if (hintsIcon) {
-      image(hintsIcon, 10, 10, 30, 30);
-    }
-    if (settings) {
-      image(settings, width - 40, 10, 30, 30);
-    }
-    if (scene !== "map" && mapIcon) {
-      image(mapIcon, width - 80, 10, 30, 30);
-    }
-    // Draw the inventory box (top, left of map icon so it doesn't overlap)
-    // Visual: small rounded rect with inventory image
-    push();
-    rectMode(CORNER);
-    stroke(255);
-    fill(0, 120);
-    strokeWeight(1);
-    rect(invX, invY, invSize, invSize, 6);
-    if (inventory) {
-      let iconPadding = 0.8;
-      let iconSize = invSize * iconPadding;
-      let yOffset = 2;
-      // draw inventory image centered in that rect
-      imageMode(CENTER);
-      image(inventory, invX + invSize / 2, invY + invSize / 2, iconSize, iconSize);
-      imageMode(CORNER);
-    }
-    pop();
+// Replace your existing top-row UI drawing (the part that draws settings/map/inventory/hints)
+// with the following (paste inside draw() where the UI icons are drawn):
 
-    let mapBoxX = width - 80;
-    let mapBoxY = 10;
-    let mapBoxSize = 30;
-    let mapIconPadding = 0.8;
-    let mapIconSize = mapBoxSize * mapIconPadding;
-
-    push();
-    rectMode(CORNER);
-    stroke(255);
-    strokeWeight(1);
-    noFill();
-    rect(mapBoxX, mapBoxY, mapBoxSize, mapBoxSize, 6);
-    pop();
-
-    if (mapIcon) {
-      imageMode(CENTER);
-      image(
-        mapIcon,
-        mapBoxX + mapBoxSize / 2,
-        mapBoxY + mapBoxSize / 2,
-        mapIconSize,
-        mapIconSize
-      );
-      imageMode(CORNER);
-    }
+if (scene !== "start") {
+  // hints icon (top-left)
+  if (hintsIcon) {
+    image(hintsIcon, 10, 10, 30, 30);
   }
+
+  // Draw infoIcon only (no fallback to settings)
+  const infoX = width - 40;
+  const infoY = 10;
+  const infoW = 30;
+  const infoH = 30;
+  if (infoIcon) {
+    imageMode(CORNER);
+    image(infoIcon, infoX, infoY, infoW, infoH);
+  }
+// draw aether/about overlay (inside draw(), after other overlays)
+if (aetherOverlay) {
+  push();
+  // draw full-screen blurb
+  if (aetherBlurb) {
+    imageMode(CORNER);
+    image(aetherBlurb, 0, 0, width, height);
+  } else {
+    // fallback textual overlay
+    fill(0, 220);
+    rect(0, 0, width, height);
+    fill(255);
+    textFont("Source Code Pro");
+    textAlign(CENTER, CENTER);
+    textSize(18);
+    text("[About]\n(Click anywhere to close)", width / 2, height / 2);
+  }
+
+  // draw the info icon on top so it remains visible (and clickable)
+  if (infoIcon) {
+    const infoX = width - 40;
+    const infoY = 10;
+    const infoW = 30;
+    const infoH = 30;
+    // optional subtle border/background so icon is readable on top of the image
+    push();
+    noStroke();
+    fill(0, 100); // semi-transparent backdrop behind the icon
+    rect(infoX - 4, infoY - 4, infoW + 8, infoH + 8, 6);
+    imageMode(CORNER);
+    image(infoIcon, infoX, infoY, infoW, infoH);
+    pop();
+  }
+  pop();
+}
+
+
+  // Map box + icon (unchanged)
+  let mapBoxX = width - 80;
+  let mapBoxY = 10;
+  let mapBoxSize = 30;
+  let mapIconPadding = 0.8;
+  let mapIconSize = mapBoxSize * mapIconPadding;
+
+  push();
+  rectMode(CORNER);
+  stroke(255);
+  strokeWeight(1);
+  noFill();
+  rect(mapBoxX, mapBoxY, mapBoxSize, mapBoxSize, 6);
+  pop();
+
+  if (scene !== "map" && mapIcon) {
+    imageMode(CENTER);
+    image(mapIcon, mapBoxX + mapBoxSize / 2, mapBoxY + mapBoxSize / 2, mapIconSize, mapIconSize);
+    imageMode(CORNER);
+  }
+
+  // Inventory box (unchanged)
+  push();
+  rectMode(CORNER);
+  stroke(255);
+  fill(0, 120);
+  strokeWeight(1);
+  rect(invX, invY, invSize, invSize, 6);
+  if (inventory) {
+    let iconPadding = 0.8;
+    let iconSize = invSize * iconPadding;
+    imageMode(CENTER);
+    image(inventory, invX + invSize / 2, invY + invSize / 2, iconSize, iconSize);
+    imageMode(CORNER);
+  }
+  pop();
+}
 
   // If bunny is in inventory, show a small indicator on the inventory box (a dot or thumbnail)
   if (bunnyInInventory) {
@@ -1112,7 +1149,7 @@ if (showAdvanceHint11) {
       if (inventoryItems.includes("funhouse key")) maskSlot++;
       let sx = startX;
       let sy = startY + maskSlot * (slotSize + 12);
-      image(gasMask, sx + 6, sy + 6, slotSize - 12, slotSize - 12);
+      image(gasmask, sx + 6, sy + 6, slotSize - 12, slotSize - 12);
     }
 
     // show inventory exit button and position it relative to panel
@@ -1121,12 +1158,14 @@ if (showAdvanceHint11) {
     let canvasX = canvas.elt.getBoundingClientRect().left + window.scrollX;
     let canvasY = canvas.elt.getBoundingClientRect().top + window.scrollY;
     let btnX = canvasX + panelX + panelW / 2 - inventoryExitButton.width / 2;
-    let btnY = canvasY + panelY + 12;
+    let btnY = canvasX + panelY + 12;
     inventoryExitButton.position(btnX, btnY);
   } else {
     // hide inventory exit button if window not open
     inventoryExitButton.hide();
   }
+
+
 
   // Hints overlay (drawn on top of everything when toggled)
   if (hintsWindow) {
@@ -1143,6 +1182,7 @@ if (showAdvanceHint11) {
     pop();
   }
 }
+
 
 function advanceMessage() {
   let lines;
@@ -1213,18 +1253,55 @@ function keyPressed() {
 }
 
 function mousePressed() {
-// If the click falls on the hintsButton area (HTML button sits over the canvas), let it handle the click.
-if (hintsButton && hintsButton.elt && canvas && canvas.elt) {
-  let btnBounds = hintsButton.elt.getBoundingClientRect();
-  let canvasRect = canvas.elt.getBoundingClientRect();
-  let relativeMouseX = mouseX + canvasRect.left;
-  let relativeMouseY = mouseY + canvasRect.top + window.scrollY;
-  if (
-    relativeMouseX >= btnBounds.left && relativeMouseX <= btnBounds.right &&
-    relativeMouseY >= btnBounds.top && relativeMouseY <= btnBounds.bottom
-  ) {
-    // The HTML button's own mousePressed handles toggling the hintsWindow,
-    // so we simply return to avoid duplicate canvas handling.
+
+// --- REPLACE the very start of mousePressed() with this block ---
+
+// compute canvas rect once (viewport coords)
+let canvasRect = null;
+if (canvas && canvas.elt && canvas.elt.getBoundingClientRect) {
+  canvasRect = canvas.elt.getBoundingClientRect();
+}
+
+// 1) If aether/about overlay is open, close it (consume the click)
+if (aetherOverlay) {
+  playActionClick();
+  // console.log('mousePressed: closing aetherOverlay');
+  aetherOverlay = false;
+  return;
+}
+
+// 2) If the click lands on the HTML hintsButton, let the button handler do the work.
+// Use viewport coordinates (getBoundingClientRect) consistently.
+if (hintsButton && hintsButton.elt && canvasRect) {
+  const btnBounds = hintsButton.elt.getBoundingClientRect(); // viewport coords
+  const screenX = canvasRect.left + mouseX; // viewport coords
+  const screenY = canvasRect.top + mouseY;  // viewport coords
+  if (screenX >= btnBounds.left && screenX <= btnBounds.right &&
+      screenY >= btnBounds.top && screenY <= btnBounds.bottom) {
+    return; // let HTML button handle it
+  }
+}
+
+// 3) Info icon click (top-right) — test in viewport coordinates to match getBoundingClientRect().
+if (canvasRect) {
+  const iconLeftScreen = canvasRect.left + (width - 40);
+  const iconRightScreen = canvasRect.left + (width - 10);
+  const iconTopScreen = canvasRect.top + 10;
+  const iconBottomScreen = canvasRect.top + 40;
+  const screenX = canvasRect.left + mouseX;
+  const screenY = canvasRect.top + mouseY;
+  if (screenX >= iconLeftScreen && screenX <= iconRightScreen &&
+      screenY >= iconTopScreen && screenY <= iconBottomScreen) {
+    playActionClick();
+    // console.log('mousePressed: infoIcon clicked -> opening aetherOverlay');
+    aetherOverlay = true;
+    return;
+  }
+} else {
+  // fallback (should rarely be needed)
+  if (mouseX >= width - 40 && mouseX <= width - 10 && mouseY >= 10 && mouseY <= 40) {
+    playActionClick();
+    aetherOverlay = true;
     return;
   }
 }
@@ -1346,7 +1423,7 @@ if (scene === "sewers") {
   }
 }
   
-  // settings click
+  // settings click (now handled by infoIcon visual) - keep behavior
   if (mouseX > width - 40 && mouseX < width - 10 && mouseY > 10 && mouseY < 40) {
     playActionClick();
     scene = "settings"; 
