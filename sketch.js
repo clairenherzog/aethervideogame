@@ -1,6 +1,5 @@
 let startImg;
 let prologueImg;
-let settings; // settings button 
 let img1;   // carousel scene
 let img2;   // ring toss scene
 let img3;   // ring for mouse
@@ -195,7 +194,6 @@ function preload() {
   playImg = loadImage("assets/playbutton.png");
   continueImg = loadImage("assets/continuebutton.png");
   proceedImg = loadImage("assets/proceedbutton.png");
-  settings = loadImage("assets/settings.png");
   funhouseKey = loadImage("assets/funhousekey.png");
   inventory = loadImage("assets/inventory.svg"); 
   // You can use the same image for map icon or create a smaller version
@@ -451,7 +449,6 @@ function setup() {
   setupHTMLControls();
 
   // Setup inventory box coordinates (top, left of other icons so it won't overlap)
-  // Icons are drawn at width-40 (settings) and width-80 (map). Place inventory left of map.
   invSize = 30;
   invX = width - 80 - invSize - 10; 
   invY = 10;
@@ -983,9 +980,6 @@ if (showAdvanceHint11) {
     if (hintsIcon) {
       image(hintsIcon, 10, 10, 30, 30);
     }
-    if (settings) {
-      image(settings, width - 40, 10, 30, 30);
-    }
     if (scene !== "map" && mapIcon) {
       image(mapIcon, width - 80, 10, 30, 30);
     }
@@ -1360,14 +1354,6 @@ if (scene === "sewers") {
     return; // prevent further click handling
   }
 }
-  
-  // settings click
-  if (mouseX > width - 40 && mouseX < width - 10 && mouseY > 10 && mouseY < 40) {
-    playActionClick();
-    scene = "settings"; 
-    return;
-  }
-  
   // map icon click (only show when not on map and not on start screen)
   if (scene !== "map" && scene !== "start" && 
       mouseX > width - 80 && mouseX < width - 50 && mouseY > 10 && mouseY < 40) {
