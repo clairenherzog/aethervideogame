@@ -185,6 +185,7 @@ function preload() {
   img6 = loadImage("assets/funhouse.png");
   img7 = loadImage("assets/sewers.png");
   hintsIcon = loadImage("assets/hints.png");
+  infoIcon = loadImage("assets/info.png");
   memories = loadImage("assets/memorygirl.png");
   gasMask = loadImage("assets/gasmask.png");
   stuffedbunnyWon = loadImage("assets/stuffedbunnywon.png");
