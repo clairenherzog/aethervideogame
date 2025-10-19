@@ -10,6 +10,7 @@ let img6;   // funhouse scene
 let img7;   // sewer scene 
 let hintsIcon; // hints icon
 let infoIcon; // info icon
+let aboutBlurb; // aether about blurb
 let funhouseKey;
 let keyX = 315; 
 let keyY = 440;
@@ -186,6 +187,7 @@ function preload() {
   img7 = loadImage("assets/sewers.png");
   hintsIcon = loadImage("assets/hints.png");
   infoIcon = loadImage("assets/info.png");
+  aboutBlurb = loadImage("assets/aetherblurb.png");
   memories = loadImage("assets/memorygirl.png");
   gasMask = loadImage("assets/gasmask.png");
   stuffedbunnyWon = loadImage("assets/stuffedbunnywon.png");
